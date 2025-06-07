@@ -1,7 +1,7 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 
-const API_URL = (import.meta as any).env.VITE_API_URL || '/api';
-console.log('🔧 DEBUG: VITE_API_URL =', (import.meta as any).env.VITE_API_URL);
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+console.log('🔧 DEBUG: VITE_API_URL =', import.meta.env.VITE_API_URL);
 console.log('🔧 DEBUG: Final API_URL =', API_URL);
 
 // Create cache for GET requests
@@ -137,12 +137,26 @@ export type SentimentByDate = {
   count: number;
 };
 
-export const login = async (username: string, password: string): Promise<any> => {
+// Define error type
+interface ApiError {
+  response?: {
+    data?: {
+      detail?: string;
+      [key: string]: unknown;
+    };
+    status?: number;
+  };
+  request?: unknown;
+  message?: string;
+}
+
+export const login = async (username: string, password: string): Promise<{ token: string }> => {
   try {
     const response = await api.post('api-token-auth/', { username, password });
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.detail || 'Login failed');
+  } catch (error) {
+    const apiError = error as ApiError;
+    throw new Error(apiError.response?.data?.detail || 'Login failed');
   }
 };
 
@@ -158,12 +172,13 @@ export const getAnalyses = async (): Promise<Analysis[]> => {
     const response = await api.get('analyses/');
     setCachedData(cacheKey, response.data);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.detail || 'Failed to fetch analyses');
+  } catch (error) {
+    const apiError = error as ApiError;
+    throw new Error(apiError.response?.data?.detail || 'Failed to fetch analyses');
   }
 };
 
-export const createAnalysis = async (data: any): Promise<any> => {
+export const createAnalysis = async (data: Partial<Analysis>): Promise<Analysis> => {
   try {
     console.log('Creating analysis with data:', data);
     const response = await api.post('analyses/', data);
@@ -171,15 +186,16 @@ export const createAnalysis = async (data: any): Promise<any> => {
     // Invalidate analyses cache
     cache.delete('analyses');
     return response.data;
-  } catch (error: any) {
+  } catch (error) {
+    const apiError = error as ApiError;
     console.error('Full error object:', error);
-    console.error('Error response:', error.response);
-    console.error('Error response data:', error.response?.data);
-    console.error('Error response status:', error.response?.status);
-    if (error.response?.data) {
-      throw new Error(JSON.stringify(error.response.data));
+    console.error('Error response:', apiError.response);
+    console.error('Error response data:', apiError.response?.data);
+    console.error('Error response status:', apiError.response?.status);
+    if (apiError.response?.data) {
+      throw new Error(JSON.stringify(apiError.response.data));
     }
-    throw new Error(error.response?.data?.detail || error.message || 'Failed to create analysis');
+    throw new Error(apiError.response?.data?.detail || apiError.message || 'Failed to create analysis');
   }
 };
 
@@ -195,8 +211,9 @@ export const getAnalysis = async (id: string): Promise<Analysis> => {
     const response = await api.get(`analyses/${id}/`);
     setCachedData(cacheKey, response.data);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.detail || 'Failed to fetch analysis');
+  } catch (error) {
+    const apiError = error as ApiError;
+    throw new Error(apiError.response?.data?.detail || 'Failed to fetch analysis');
   }
 };
 
@@ -212,8 +229,9 @@ export const getAnalysisResults = async (id: string): Promise<AnalysisResult[]> 
     const response = await api.get(`analyses/${id}/results/`);
     setCachedData(cacheKey, response.data);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.detail || 'Failed to fetch analysis results');
+  } catch (error) {
+    const apiError = error as ApiError;
+    throw new Error(apiError.response?.data?.detail || 'Failed to fetch analysis results');
   }
 };
 
@@ -229,19 +247,21 @@ export const getAnalysisSummary = async (id: string): Promise<AnalysisSummary> =
     const response = await api.get(`analyses/${id}/summary/`);
     setCachedData(cacheKey, response.data);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.detail || 'Failed to fetch analysis summary');
+  } catch (error) {
+    const apiError = error as ApiError;
+    throw new Error(apiError.response?.data?.detail || 'Failed to fetch analysis summary');
   }
 };
 
-export const updateSentiment = async (analysisId: string, resultId: string, sentiment: string, reason: string): Promise<any> => {
+export const updateSentiment = async (analysisId: string, resultId: string, sentiment: string, reason: string): Promise<AnalysisResult> => {
   try {
     const response = await api.patch(`analyses/${analysisId}/results/${resultId}/`, {
       manual_sentiment: sentiment,
       override_reason: reason
     });
     return response.data;
-  } catch (error: any) {
+  } catch (error) {
+    const apiError = error as ApiError;
     console.error('Error updating sentiment:', error);
     throw error;
   }
@@ -251,7 +271,8 @@ export const getSentimentByDate = async (id: string): Promise<SentimentByDate[]>
   try {
     const response = await api.get(`analyses/${id}/sentiment-by-date/`);
     return response.data as SentimentByDate[];
-  } catch (error: any) {
+  } catch (error) {
+    const apiError = error as ApiError;
     console.error('Error fetching sentiment by date:', error);
     throw error;
   }
@@ -261,7 +282,8 @@ export const getIQDistribution = async (id: string): Promise<IQDistribution[]> =
   try {
     const response = await api.get(`analyses/${id}/iq-distribution/`);
     return response.data as IQDistribution[];
-  } catch (error: any) {
+  } catch (error) {
+    const apiError = error as ApiError;
     console.error('Error fetching IQ distribution:', error);
     throw error;
   }
@@ -271,34 +293,44 @@ export const getBotAnalysis = async (id: string): Promise<BotAnalysis> => {
   try {
     const response = await api.get(`analyses/${id}/bot-analysis/`);
     return response.data as BotAnalysis;
-  } catch (error: any) {
+  } catch (error) {
+    const apiError = error as ApiError;
     console.error('Error fetching bot analysis:', error);
     throw error;
   }
 };
 
-export const getAnalysisFullDetails = async (id: string): Promise<any> => {
+export const getAnalysisFullDetails = async (id: string): Promise<Analysis & { summary: AnalysisSummary; results: AnalysisResult[] }> => {
   try {
     // Always fetch fresh data when getting full details
     const response = await api.get(`analyses/${id}/full-details/`);
     return response.data;
-  } catch (error: any) {
+  } catch (error) {
+    const apiError = error as ApiError;
     console.error('Error fetching full analysis details:', error);
-    throw new Error(error.response?.data?.detail || 'Failed to fetch analysis details');
+    throw new Error(apiError.response?.data?.detail || 'Failed to fetch analysis details');
   }
 };
 
-export const getGemmaStatus = async (): Promise<any> => {
+export const getGemmaStatus = async (): Promise<{ available: boolean; status: string }> => {
   try {
     const response = await api.get('analyses/gemma-status/');
     return response.data;
-  } catch (error: any) {
+  } catch (error) {
+    const apiError = error as ApiError;
     console.error('Error fetching Gemma status:', error);
     throw error;
   }
 };
 
-export const searchAnalysisResults = async (id: string, params: any): Promise<any> => {
+interface SearchParams {
+  search?: string;
+  ordering?: string;
+  sentiment?: string;
+  [key: string]: unknown;
+}
+
+export const searchAnalysisResults = async (id: string, params: SearchParams): Promise<{ results: AnalysisResult[]; count: number }> => {
   // const cacheKey = `analysis-search-${id}-${JSON.stringify(params)}`;
   // const cachedData = getCachedData(cacheKey);
   // if (cachedData) {
@@ -309,8 +341,9 @@ export const searchAnalysisResults = async (id: string, params: any): Promise<an
     const response = await api.get(`analyses/${id}/search/`, { params });
     // setCachedData(cacheKey, response.data);
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.detail || 'Failed to search analysis results');
+  } catch (error) {
+    const apiError = error as ApiError;
+    throw new Error(apiError.response?.data?.detail || 'Failed to search analysis results');
   }
 };
 
