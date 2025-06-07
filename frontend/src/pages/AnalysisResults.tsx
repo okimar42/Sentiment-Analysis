@@ -116,7 +116,8 @@ const AnalysisResults = ({ analysisId }: { analysisId?: any }) => {
         return;
       }
       setSearchResults(results);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Search error:', error);
       setSearchResults({
         results: [],
         total_count: 0,
@@ -132,7 +133,7 @@ const AnalysisResults = ({ analysisId }: { analysisId?: any }) => {
     if (id) {
       debouncedSearch(searchParams);
     }
-  }, [searchParams, id]);
+  }, [searchParams, id, debouncedSearch]);
 
   const handleSearchChange = (field: string, value: unknown) => {
     setSearchParams(prev => ({
@@ -195,8 +196,9 @@ const AnalysisResults = ({ analysisId }: { analysisId?: any }) => {
       if (data.analysis.status === 'completed' || data.analysis.status === 'failed') {
         setLoading(false);
       }
-    } catch (err) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch analysis details';
+      setError(errorMessage);
       setLoading(false);
     }
   }, [id]);
@@ -276,7 +278,7 @@ const AnalysisResults = ({ analysisId }: { analysisId?: any }) => {
       }));
       // Refetch summary and sentiment-by-date to update graphs
       await fetchData();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating result:', error);
       // Optionally show user-friendly error message
       setError('Failed to update result. Please try again.');
