@@ -1,0 +1,47 @@
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV DJANGO_DEBUG=True
+ENV DJANGO_SETTINGS_MODULE=core.settings
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip, setuptools, and wheel for faster, more reliable installs
+RUN pip install --upgrade pip setuptools wheel
+
+# Set work directory
+WORKDIR /app
+
+# Set ARG USE_GPU with default false
+ARG USE_GPU=false
+ENV CPU_ONLY=0
+
+# Copy only requirements first for better caching
+COPY requirements.txt requirements-cpu.txt requirements-dev.txt ./
+
+# Install Python dependencies with BuildKit cache mount
+RUN --mount=type=cache,target=/root/.cache/pip \
+    if [ "$USE_GPU" = "false" ]; then \
+      pip install --no-cache-dir -r requirements-cpu.txt && export CPU_ONLY=1; \
+    else \
+      pip install --no-cache-dir -r requirements.txt; \
+    fi
+# Install dev dependencies
+RUN pip install --no-cache-dir -r requirements-dev.txt
+
+# Now copy the rest of the code
+COPY entrypoint.sh .
+COPY wait-for-it.sh .
+RUN chmod +x entrypoint.sh wait-for-it.sh
+
+# Expose port 8000
+EXPOSE 8000
+
+# Start development server with migrations
+CMD ["./wait-for-it.sh", "db:5432", "--", "python", "manage.py", "runserver", "0.0.0.0:8000"] 

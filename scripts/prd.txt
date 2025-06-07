@@ -1,0 +1,74 @@
+<context>
+# Overview  
+This product is a sentiment analyzer designed for financial analysts, traders, and researchers. It automatically pulls data from Reddit and Twitter, analyzes sentiment related to financial tickers (e.g., stock symbols), and provides actionable insights through multiple visualizations. The tool helps users gauge market sentiment, identify trends, and make informed decisions based on real-time social media data.
+
+# Core Features  
+- **Data Ingestion**: Automatically fetches posts and comments from Reddit and tweets from Twitter related to specified financial tickers.
+  - Important for capturing real-time market sentiment.
+  - Uses APIs and scraping tools to gather relevant data.
+- **Sentiment Analysis**: Processes the collected data to determine positive, negative, or neutral sentiment for each ticker.
+  - Employs NLP models tailored for financial language.
+  - Supports manual override and feedback for model improvement.
+- **Visualization Dashboard**: Presents sentiment trends, volume, and other analytics in interactive charts and graphs.
+  - Includes time series, pie charts, and heatmaps.
+  - Allows filtering by ticker, date range, and source (Reddit/Twitter).
+- **User Authentication**: Secure login for users to save preferences and access personalized dashboards.
+- **Export & API Access**: Users can export data or access results via an API for integration with other tools.
+
+# User Experience  
+- **User Personas**: Financial analysts, retail traders, institutional investors, and researchers.
+- **Key User Flows**:
+  - User logs in, enters or selects tickers, and views sentiment analysis results.
+  - User explores visualizations, filters data, and exports reports.
+- **UI/UX Considerations**:
+  - Clean, intuitive dashboard with responsive design.
+  - Emphasis on clarity and actionable insights.
+</context>
+<PRD>
+# Technical Architecture  
+- **System Components**:
+  - Frontend: React (Vite) dashboard for visualization and user interaction.
+  - Backend: Python (Django/FastAPI) for data processing, sentiment analysis, and API endpoints.
+  - Database: PostgreSQL for storing user data, analyses, and results.
+  - Task Queue: Celery for background data fetching and processing.
+- **Data Models**:
+  - User, Analysis, Ticker, SentimentResult, Source (Reddit/Twitter), VisualizationConfig.
+- **APIs and Integrations**:
+  - Reddit API, Twitter API for data ingestion.
+  - REST API for frontend-backend communication and external integrations.
+- **Infrastructure Requirements**:
+  - Dockerized deployment, scalable for increased data volume.
+  - GPU support for NLP models if available.
+
+# Development Roadmap  
+- **MVP Requirements**:
+  - User authentication
+  - Ticker input and management
+  - Data ingestion from Reddit and Twitter
+  - Sentiment analysis pipeline
+  - Visualization dashboard (basic charts)
+  - Export functionality
+- **Future Enhancements**:
+  - Advanced filtering and custom visualizations
+  - Real-time streaming data
+  - Model feedback loop and improvement
+  - Additional data sources (e.g., news, forums)
+
+# Logical Dependency Chain
+- Set up backend, database, and user authentication first.
+- Implement data ingestion and sentiment analysis pipeline.
+- Build basic frontend dashboard and connect to backend.
+- Add visualizations and export features.
+- Enhance with advanced features and optimizations.
+
+# Risks and Mitigations  
+- **API Rate Limits**: Use caching and efficient scheduling to avoid hitting limits.
+- **NLP Model Accuracy**: Allow manual overrides and continuous model training.
+- **Data Privacy**: Ensure secure handling of user data and compliance with platform policies.
+- **Scalability**: Use Docker and task queues to handle increased load.
+
+# Appendix  
+- Research on financial sentiment analysis
+- Example API responses
+- UI wireframes (to be added)
+</PRD> 

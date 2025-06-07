@@ -1,0 +1,40 @@
+# Use CPU-only Python base image
+FROM python:3.10-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install system dependencies (pin versions for reproducibility)
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
+    python3.10-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create and activate virtual environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Upgrade pip, setuptools, and wheel for faster, more reliable installs
+RUN pip install --upgrade pip setuptools wheel
+
+# Set working directory
+WORKDIR /app
+
+# Always CPU-only
+ENV CPU_ONLY=1
+
+# Best practice: install dependencies before copying app code for better caching
+COPY requirements-cpu.txt ./
+# Use pip cache for faster builds (requires BuildKit)
+RUN --mount=type=cache,target=/root/.cache/pip pip install --no-cache-dir -r requirements-cpu.txt
+
+# Now copy the rest of the code
+COPY . .
+
+# Set entrypoint
+ENTRYPOINT ["python", "manage.py", "runserver", "0.0.0.0:8000"] 

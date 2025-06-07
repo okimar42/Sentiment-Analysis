@@ -1,0 +1,172 @@
+version: '3.8'
+
+networks:
+  sentiment-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+      com.docker.network.enable_ipv4: "true"
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=sentiment_analysis
+      - POSTGRES_USER=sentiment_analysis
+      - POSTGRES_PASSWORD=sentiment_analysis
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentiment_analysis"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sentiment-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - sentiment-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+      - /usr/lib/wsl/lib:/usr/lib/wsl/lib
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - SERVICE_ROLE=backend
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - DATABASE_URL=postgres://sentiment_analysis:sentiment_analysis@db:5432/sentiment_analysis
+      - REDIS_URL=redis://redis:6379/0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    user: "0:0"
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, compute, utility]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/analyses/health/ || exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    entrypoint: ["./entrypoint.sh"]
+    networks:
+      - sentiment-network
+
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+      - /usr/lib/wsl/lib:/usr/lib/wsl/lib
+    env_file:
+      - ./backend/.env
+    environment:
+      - SERVICE_ROLE=celery
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - DATABASE_URL=postgres://sentiment_analysis:sentiment_analysis@db:5432/sentiment_analysis
+      - REDIS_URL=redis://redis:6379/0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
+    depends_on:
+      - backend
+      - redis
+    user: "0:0"
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, compute, utility]
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A sentiment_analysis status || exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    entrypoint: ["./entrypoint.sh"]
+    networks:
+      - sentiment-network
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sentiment-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - sentiment-network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+volumes:
+  postgres_data:
+  huggingface_cache: 

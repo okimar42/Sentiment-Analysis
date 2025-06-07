@@ -1,0 +1,161 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=sentiment_analysis
+      - POSTGRES_USER=sentiment_analysis
+      - POSTGRES_PASSWORD=sentiment_analysis
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentiment_analysis"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sentiment-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+      - huggingface_cache:/root/.cache/huggingface
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - SERVICE_ROLE=backend
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - DATABASE_URL=postgres://sentiment_analysis:sentiment_analysis@db:5432/sentiment_analysis
+      - REDIS_URL=redis://redis:6379/0
+      - DJANGO_DEBUG=True
+      - PYTHONUNBUFFERED=1
+      - TRANSFORMERS_CACHE=/root/.cache/huggingface
+      - HF_HOME=/root/.cache/huggingface
+      - USE_GPU=${USE_GPU:-true}
+    depends_on:
+      - db
+      - redis
+    user: "0:0"
+    privileged: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/analyses/health/ || exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    entrypoint: ["./entrypoint.sh"]
+    networks:
+      - sentiment-network
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          devices:
+            - capabilities:
+                - gpu
+                - compute
+                - utility
+              driver: nvidia
+              count: 1
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - sentiment-network
+
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+      - huggingface_cache:/root/.cache/huggingface
+    env_file:
+      - ./backend/.env
+    environment:
+      - SERVICE_ROLE=celery
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - DATABASE_URL=postgres://sentiment_analysis:sentiment_analysis@db:5432/sentiment_analysis
+      - REDIS_URL=redis://redis:6379/0
+      - DJANGO_DEBUG=True
+      - PYTHONUNBUFFERED=1
+      - TRANSFORMERS_CACHE=/root/.cache/huggingface
+      - HF_HOME=/root/.cache/huggingface
+      - USE_GPU=${USE_GPU:-true}
+    depends_on:
+      - backend
+      - redis
+    user: "0:0"
+    privileged: true
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A sentiment_analysis status || exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    entrypoint: ["./entrypoint.sh"]
+    networks:
+      - sentiment-network
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          devices:
+            - capabilities:
+                - gpu
+                - compute
+                - utility
+              driver: nvidia
+              count: 1
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sentiment-network
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - sentiment-network
+
+volumes:
+  postgres_data:
+  huggingface_cache:
+
+networks:
+  sentiment-network:
+    external: false 

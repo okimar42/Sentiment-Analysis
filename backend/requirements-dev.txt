@@ -1,0 +1,5 @@
+# Development and test dependencies
+pytest
+pytest-django
+django-debug-toolbar
+drf-spectacular[sidecar] 
