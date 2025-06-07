@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -17,10 +16,6 @@ import {
   Checkbox,
   ListItemText,
   FormControlLabel,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { createAnalysis } from '../services/api';
@@ -82,7 +77,6 @@ type FormData = {
 };
 
 function AnalysisForm() {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     query: '',
     source: ['reddit'],
@@ -181,15 +175,6 @@ function AnalysisForm() {
       setError('Failed to create analysis');
     }
   };
-
-  // Add a helper to check if Twitter is selected
-  function hasTwitterSource(analysis: any): boolean {
-    if (!analysis) return false;
-    if (Array.isArray(analysis.source)) {
-      return analysis.source.includes('twitter');
-    }
-    return analysis.source === 'twitter';
-  }
 
   // Add a dedicated handler for the source select
   const handleSourceChange = (event: SelectChangeEvent<string[]>) => {

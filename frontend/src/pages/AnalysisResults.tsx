@@ -75,7 +75,7 @@ const AnalysisResults = ({ analysisId }: { analysisId?: any }) => {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [summary, setSummary] = useState<AnalysisSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [debugStatus, setDebugStatus] = useState('');
   const [debugFull, setDebugFull] = useState('');
@@ -277,6 +277,9 @@ const AnalysisResults = ({ analysisId }: { analysisId?: any }) => {
       // Refetch summary and sentiment-by-date to update graphs
       await fetchData();
     } catch (error) {
+      console.error('Error updating result:', error);
+      // Optionally show user-friendly error message
+      setError('Failed to update result. Please try again.');
     }
   };
 
