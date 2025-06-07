@@ -133,7 +133,7 @@ const AnalysisResults = ({ analysisId }: { analysisId?: any }) => {
     if (id) {
       debouncedSearch(searchParams);
     }
-  }, [searchParams, id]);
+  }, [searchParams, id, debouncedSearch]);
 
   const handleSearchChange = (field: string, value: unknown) => {
     setSearchParams(prev => ({
