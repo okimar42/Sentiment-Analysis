@@ -29,11 +29,27 @@ const Dashboard: React.FC = () => {
   const fetchAnalyses = async (): Promise<void> => {
     try {
       const data = await getAnalyses();
-      setAnalyses(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setError('Failed to fetch analyses');
+      setAnalyses(data);
+    } catch (err: unknown) {
+      console.error('Failed to fetch analyses:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch analyses';
+      setError(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteAnalysis = async (id: string) => {
+    try {
+      await fetch(`/api/analyses/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('token')}`,
+        },
+      });
+      setAnalyses(analyses.filter((a: Analysis) => a.id !== id));
+    } catch (e: unknown) {
+      console.error('Failed to delete analysis:', e);
     }
   };
 

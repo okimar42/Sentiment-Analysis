@@ -170,9 +170,10 @@ function AnalysisForm() {
       setError('');
       alert(`Analysis created successfully! ID: ${result.id}`);
       
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error creating analysis:', err);
-      setError('Failed to create analysis');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create analysis';
+      setError(errorMessage);
     }
   };
 

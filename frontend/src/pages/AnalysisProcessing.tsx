@@ -48,12 +48,11 @@ function AnalysisProcessing() {
           } else {
             setRetryCount((c) => c + 1);
           }
-        } catch (err) {
-          // If 404, keep polling; if other error, show error
-          if (err.message && !err.message.includes('404')) {
-            setError('Error checking analysis results.');
-            clearInterval(interval);
-          }
+        } catch (err: unknown) {
+          console.error('Failed to fetch analysis results', err);
+          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch analysis results';
+          setError(errorMessage);
+          clearInterval(interval);
         }
       }, 3000);
     }
