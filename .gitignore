@@ -1,4 +1,4 @@
-# Python
+Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -106,3 +106,5 @@ dev-debug.log
 # Task files
 tasks.json
 tasks/ 
+
+.cursor/
