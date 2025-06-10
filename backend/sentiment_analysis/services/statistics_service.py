@@ -2,8 +2,7 @@
 Statistics calculation service for sentiment analysis.
 """
 
-from typing import Dict, Any, List, QuerySet
-from django.db.models import Avg, Count
+from typing import Dict, Any, List
 from collections import defaultdict, Counter
 from datetime import datetime
 
@@ -12,7 +11,7 @@ class StatisticsService:
     """Service for calculating various statistics from sentiment analysis results."""
     
     @staticmethod
-    def get_analysis_summary(results: QuerySet) -> Dict[str, Any]:
+    def get_analysis_summary(results: Any) -> Dict[str, Any]:
         """
         Compute summary statistics for a queryset of SentimentResult.
         
@@ -46,7 +45,7 @@ class StatisticsService:
         }
     
     @staticmethod
-    def get_sentiment_by_date(results: QuerySet) -> List[Dict[str, Any]]:
+    def get_sentiment_by_date(results: Any) -> List[Dict[str, Any]]:
         """
         Get sentiment scores grouped by date.
         
@@ -77,7 +76,7 @@ class StatisticsService:
         return sentiment_by_date
     
     @staticmethod
-    def get_iq_distribution(results: QuerySet) -> List[Dict[str, Any]]:
+    def get_iq_distribution(results: Any) -> List[Dict[str, Any]]:
         """
         Get IQ score distribution.
         
@@ -91,7 +90,7 @@ class StatisticsService:
         iq_scores = [result.perceived_iq for result in results if result.perceived_iq is not None]
         
         # Create IQ ranges (bins of 10)
-        iq_distribution = defaultdict(int)
+        iq_distribution: defaultdict[int, int] = defaultdict(int)
         for iq in iq_scores:
             # Round to nearest 10 for grouping
             bin_value = int(iq // 10) * 10
@@ -108,7 +107,7 @@ class StatisticsService:
         return distribution_list
     
     @staticmethod
-    def get_bot_analysis(results: QuerySet) -> Dict[str, Any]:
+    def get_bot_analysis(results: Any) -> Dict[str, Any]:
         """
         Get bot analysis statistics.
         

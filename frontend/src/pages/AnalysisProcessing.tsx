@@ -24,38 +24,34 @@ function AnalysisProcessing() {
     let isActive = true;
     const pollInterval = setInterval(async () => {
       if (!isActive) return;
-      
-        try {
-          setLastPoll(new Date().toLocaleTimeString());
+      try {
+        setLastPoll(new Date().toLocaleTimeString());
         console.log(`[${new Date().toLocaleTimeString()}] Polling for analysis ${id}...`);
-        
         const result = await getAnalysisFullDetails(id);
         const status = result.analysis?.status || 'unknown';
         setLastResponse(`status: ${status}`);
         console.log(`[${new Date().toLocaleTimeString()}] Response status: ${status}`);
-        
         if (status === 'completed') {
           console.log(`[${new Date().toLocaleTimeString()}] Analysis completed, navigating to results`);
           clearInterval(pollInterval);
           showProcessingComplete('Analysis Processing', notificationProcessId, true);
-              navigate(`/analysis/${id}`);
+          navigate(`/analysis/${id}`);
         } else if (status === 'failed') {
           console.log(`[${new Date().toLocaleTimeString()}] Analysis failed`);
           clearInterval(pollInterval);
           showProcessingComplete('Analysis Processing', notificationProcessId, false);
-              setError('Analysis failed. Please try again.');
-              clearInterval(interval);
-            } // else keep polling for 'pending' or 'processing'
-          } else {
-            setRetryCount((c) => c + 1);
-          }
-        } catch (err: unknown) {
-          console.error('Failed to fetch analysis results', err);
-          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch analysis results';
-          setError(errorMessage);
-          clearInterval(interval);
+          setError('Analysis failed. Please try again.');
+        } else {
+          // status is 'pending' or 'processing', keep polling
+          setRetryCount((c) => c + 1);
         }
-      }, 3000);
+      } catch (err: unknown) {
+        console.error('Failed to fetch analysis results', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch analysis results';
+        setError(errorMessage);
+        clearInterval(pollInterval);
+      }
+    }, 3000);
 
     return () => {
       isActive = false;

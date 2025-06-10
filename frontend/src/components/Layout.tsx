@@ -29,9 +29,10 @@ const drawerWidth = 240;
 interface LayoutProps {
   mode?: 'light' | 'dark';
   toggleMode?: () => void;
+  children?: ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ mode = 'light', toggleMode }) => {
+const Layout: React.FC<LayoutProps> = ({ mode = 'light', toggleMode, children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -134,6 +135,7 @@ const Layout: React.FC<LayoutProps> = ({ mode = 'light', toggleMode }) => {
         }}
       >
         <Toolbar />
+        {typeof children !== 'undefined' ? children : null}
         <Outlet />
       </Box>
     </Box>

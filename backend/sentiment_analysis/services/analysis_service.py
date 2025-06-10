@@ -46,22 +46,19 @@ class AnalysisService:
     @staticmethod
     def dispatch_analysis_task(analysis: 'SentimentAnalysis') -> None:
         """
-        Dispatch the appropriate Celery task based on analysis source.
-        
-        Args:
-            analysis: SentimentAnalysis instance to process
+        Dispatch the appropriate Celery task(s) based on analysis sources.
         """
-        if 'reddit' in analysis.source.lower():
-            # Import here to avoid circular imports
-            from ..tasks.reddit import analyze_reddit_sentiment
-            analyze_reddit_sentiment.delay(analysis.id)
-        elif 'twitter' in analysis.source.lower():
-            from ..tasks.twitter import analyze_twitter_sentiment
-            analyze_twitter_sentiment.delay(analysis.id)
-        else:
-            # Default to Reddit for backwards compatibility
-            from ..tasks.reddit import analyze_reddit_sentiment
-            analyze_reddit_sentiment.delay(analysis.id)
+        sources = analysis.source if isinstance(analysis.source, list) else [analysis.source]
+        for source in sources:
+            if source.lower() == 'reddit':
+                from ..tasks.reddit import analyze_reddit_sentiment
+                analyze_reddit_sentiment.delay(analysis.id)
+            elif source.lower() == 'twitter':
+                from ..tasks.twitter import analyze_twitter_sentiment
+                analyze_twitter_sentiment.delay(analysis.id)
+            else:
+                # Optionally log or handle unknown sources
+                pass
     
     @staticmethod
     def update_result_sentiment(

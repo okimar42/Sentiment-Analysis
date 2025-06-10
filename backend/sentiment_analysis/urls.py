@@ -1,12 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-from .views import SentimentAnalysisViewSet
+from .views import SentimentAnalysisViewSet, HealthCheckView
 
 router = DefaultRouter()
 router.register(r'analyze', views.SentimentAnalysisViewSet, basename='sentiment-analysis')
 
 urlpatterns = [
+    path('analyze/health/', HealthCheckView.as_view(), name='analyze-health'),
     path('', include(router.urls)),
     path(
         'analyze/<int:pk>/results/<int:result_id>/',

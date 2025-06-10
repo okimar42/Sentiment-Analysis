@@ -2,7 +2,6 @@
 import { vi } from 'vitest';
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-// @ts-expect-error: No type declarations for api.js
 import * as api from './services/api';
 import App from './App';
 import { NotificationProvider } from './contexts/NotificationContext';
