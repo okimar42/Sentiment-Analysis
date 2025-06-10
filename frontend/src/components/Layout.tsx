@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Outlet } from 'react-router-dom';
 import {
   AppBar,
   Box,
@@ -28,12 +28,11 @@ import ListItemButton from '@mui/material/ListItemButton';
 const drawerWidth = 240;
 
 interface LayoutProps {
-  children: ReactNode;
   mode?: 'light' | 'dark';
   toggleMode?: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, mode = 'light', toggleMode }) => {
+const Layout: React.FC<LayoutProps> = ({ mode = 'light', toggleMode }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -136,7 +135,7 @@ const Layout: React.FC<LayoutProps> = ({ children, mode = 'light', toggleMode })
         }}
       >
         <Toolbar />
-        {children}
+        <Outlet />
       </Box>
     </Box>
   );

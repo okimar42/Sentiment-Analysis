@@ -5,6 +5,7 @@ import Dashboard from './Dashboard.jsx';
 import { getAnalyses } from '../services/api';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
+import { NotificationProvider } from '../contexts/NotificationContext';
 
 vi.mock('../services/api');
 
@@ -18,13 +19,13 @@ describe('Dashboard', () => {
   });
 
   it('shows loading spinner initially', () => {
-    renderWithRouter(<Dashboard />);
+    renderWithRouter(<NotificationProvider><Dashboard /></NotificationProvider>);
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
   it('shows error state if API fails', async () => {
     getAnalyses.mockRejectedValueOnce(new Error('Failed to fetch analyses'));
-    renderWithRouter(<Dashboard />);
+    renderWithRouter(<NotificationProvider><Dashboard /></NotificationProvider>);
     await waitFor(() => {
       expect(screen.getByText(/failed to fetch analyses/i)).toBeInTheDocument();
     });
@@ -35,14 +36,14 @@ describe('Dashboard', () => {
       { id: 1, query: 'test1', status: 'completed', source: ['twitter'] },
       { id: 2, query: 'test2', status: 'pending', source: ['reddit'] },
     ]);
-    renderWithRouter(<Dashboard />);
+    renderWithRouter(<NotificationProvider><Dashboard /></NotificationProvider>);
     expect(await screen.findByText('test1')).toBeInTheDocument();
     expect(screen.getByText('test2')).toBeInTheDocument();
   });
 
   it('navigates to new analysis on button click', async () => {
     getAnalyses.mockResolvedValueOnce([]);
-    renderWithRouter(<Dashboard />);
+    renderWithRouter(<NotificationProvider><Dashboard /></NotificationProvider>);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /new analysis/i })).toBeInTheDocument();
     });

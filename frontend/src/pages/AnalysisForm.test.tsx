@@ -7,6 +7,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { NotificationProvider } from '../contexts/NotificationContext';
 
 // Define mockNavigate at the module level
 const mockNavigate = vi.fn();
@@ -23,7 +24,9 @@ const renderWithRouter = (ui) => {
   return render(
     <BrowserRouter>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        {ui}
+        <NotificationProvider>
+          {ui}
+        </NotificationProvider>
       </LocalizationProvider>
     </BrowserRouter>
   );

@@ -5,6 +5,7 @@ import AnalysisResults from './AnalysisResults.jsx';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import * as api from '../services/api';
+import { NotificationProvider } from '../contexts/NotificationContext';
 
 // Mock ResizeObserver for recharts and MUI
 beforeAll(() => {
@@ -75,7 +76,7 @@ describe('AnalysisResults', () => {
   });
 
   it('renders loading spinner and then main content', async () => {
-    render(<AnalysisResults />);
+    render(<NotificationProvider><AnalysisResults /></NotificationProvider>);
     // Spinner should be present initially
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
     // Wait for the main heading to appear

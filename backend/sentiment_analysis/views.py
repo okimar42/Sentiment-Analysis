@@ -18,7 +18,7 @@ from django.conf import settings
 import aiohttp
 import asyncio
 from django.http import Http404, StreamingHttpResponse
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from drf_spectacular.openapi import AutoSchema
 from rest_framework.views import APIView
 import csv
@@ -328,28 +328,29 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
     def search_results(self, request, pk=None):
         """Search results with advanced filtering and sorting."""
         analysis = get_object_or_404(SentimentAnalysis, pk=pk)
-        results = analysis.results.filter(is_ad=False).select_related('sentiment_analysis').prefetch_related('image_results')
+        # Return all posts for the analysis, no is_ad filter
+        results = SentimentResult.objects.filter(sentiment_analysis=analysis).select_related('sentiment_analysis').prefetch_related('image_results')
         # Apply search query
         search_query = request.query_params.get('q', '')
         if search_query:
             results = results.filter(content__icontains=search_query)
-        # Apply sentiment filter
+        # Apply sentiment filter ONLY if set to a restrictive value
         sentiment = request.query_params.get('sentiment')
-        if sentiment:
+        if sentiment in ('positive', 'negative', 'neutral'):
             if sentiment == 'positive':
-                results = results.filter(score__gt=0.05)
+                results = results.filter(final_score__gt=0.05)
             elif sentiment == 'negative':
-                results = results.filter(score__lt=-0.05)
+                results = results.filter(final_score__lt=-0.05)
             elif sentiment == 'neutral':
-                results = results.filter(score__gte=-0.05, score__lte=0.05)
-        # Apply sarcasm filter
+                results = results.filter(final_score__gte=-0.05, final_score__lte=0.05)
+        # Apply sarcasm filter ONLY if set to 'true'
         sarcasm = request.query_params.get('sarcasm')
-        if sarcasm is not None:
-            results = results.filter(is_sarcastic=sarcasm.lower() == 'true')
-        # Apply bot filter
+        if sarcasm is not None and sarcasm.lower() == 'true':
+            results = results.filter(is_sarcastic=True)
+        # Apply bot filter ONLY if set to 'true'
         bot = request.query_params.get('bot')
-        if bot is not None:
-            results = results.filter(is_bot=bot.lower() == 'true')
+        if bot is not None and bot.lower() == 'true':
+            results = results.filter(is_bot=True)
         # Apply IQ filter
         min_iq = request.query_params.get('min_iq')
         if min_iq is not None:
@@ -371,20 +372,16 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
             results = results.order_by(sort_field)
         else:
             results = results.order_by(f'-{sort_field}')
-        # Apply pagination
-        page = int(request.query_params.get('page', 1))
-        page_size = int(request.query_params.get('page_size', 20))
-        start = (page - 1) * page_size
-        end = start + page_size
-        total_count = results.count()
-        paginated_results = results[start:end]
-        serializer = SentimentResultSerializer(paginated_results, many=True)
+        # Return all results for the analysis, no pagination (for debugging)
+        raw_ids = list(results.values_list('id', flat=True))
+        serializer = SentimentResultSerializer(results, many=True)
         return Response({
             'results': serializer.data,
-            'total_count': total_count,
-            'page': page,
-            'page_size': page_size,
-            'total_pages': (total_count + page_size - 1) // page_size
+            'total_count': results.count(),
+            'page': 1,
+            'page_size': results.count(),
+            'total_pages': 1,
+            'raw_ids': raw_ids
         })
 
     @action(detail=True, methods=['get'], url_path='export-csv')
@@ -419,6 +416,17 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
         response = StreamingHttpResponse(pseudo_buffer, content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="analysis_{analysis.id}_results.csv"'
         return response
+
+    @action(detail=True, methods=['get'], url_path='debug-results')
+    def debug_results(self, request, pk=None):
+        from .models import SentimentResult
+        analysis = get_object_or_404(SentimentAnalysis, pk=pk)
+        results = SentimentResult.objects.filter(sentiment_analysis=analysis)
+        return Response({
+            'count': results.count(),
+            'ids': list(results.values_list('id', flat=True)),
+            'sample': list(results.values('id', 'content', 'score', 'final_score')[:5])
+        })
 
 class UserRegistrationView(APIView):
     permission_classes = [AllowAny]

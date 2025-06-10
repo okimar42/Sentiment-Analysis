@@ -4,11 +4,14 @@ import '@testing-library/jest-dom';
 import Layout from './Layout.jsx';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
+import { NotificationProvider } from '../contexts/NotificationContext';
 
 const renderWithRouter = (ui, props = {}) => {
   return render(
     <BrowserRouter>
-      {React.cloneElement(ui, props)}
+      <NotificationProvider>
+        {React.cloneElement(ui, props)}
+      </NotificationProvider>
     </BrowserRouter>
   );
 };

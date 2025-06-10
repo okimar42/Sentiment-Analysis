@@ -111,7 +111,7 @@ const Dashboard: React.FC = () => {
                       color="primary"
                       onClick={() => {
                         if (analysis.id) {
-                          navigate(`/analysis/${analysis.id}/processing`);
+                          navigate(`/results/${analysis.id}`);
                         } else {
                           alert('Invalid analysis: missing ID');
                         }

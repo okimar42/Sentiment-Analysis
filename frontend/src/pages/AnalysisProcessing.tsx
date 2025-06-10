@@ -1,64 +1,73 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Paper, Typography, Box, CircularProgress, Alert, Button } from '@mui/material';
-import { getAnalysisResults as originalGetAnalysisResults } from '../services/api';
-import type { AnalysisResult } from '../services/api';
-
-function getAnalysisResultsNoCache(id: string) {
-  // Add a cache-busting query param
-  return originalGetAnalysisResults(id + '?_=' + Date.now());
-}
+import { getAnalysisFullDetails } from '../services/api';
+import { useNotification } from '../contexts/NotificationContext';
 
 function AnalysisProcessing() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { showProcessingStart, showProcessingComplete } = useNotification();
   const [error, setError] = useState<string>('');
-  const [retryCount, setRetryCount] = useState<number>(0);
-  const [lastPoll, setLastPoll] = useState<string | null>(null);
-  const [lastResponse, setLastResponse] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [lastPoll, setLastPoll] = useState<string>('');
+  const [lastResponse, setLastResponse] = useState<string>('');
+  const [processId, setProcessId] = useState<string | null>(null);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (id) {
-      interval = setInterval(async () => {
+    if (!id) return;
+
+    // Show processing started notification when component mounts
+    const notificationProcessId = showProcessingStart('Analysis Processing');
+    setProcessId(notificationProcessId);
+
+    let isActive = true;
+    const pollInterval = setInterval(async () => {
+      if (!isActive) return;
+      
         try {
-          const results = await getAnalysisResultsNoCache(id);
           setLastPoll(new Date().toLocaleTimeString());
-          setLastResponse(JSON.stringify(results));
-          // Handle new backend status response
-          if (Array.isArray(results)) {
-            if (results.length > 0) {
+        console.log(`[${new Date().toLocaleTimeString()}] Polling for analysis ${id}...`);
+        
+        const result = await getAnalysisFullDetails(id);
+        const status = result.analysis?.status || 'unknown';
+        setLastResponse(`status: ${status}`);
+        console.log(`[${new Date().toLocaleTimeString()}] Response status: ${status}`);
+        
+        if (status === 'completed') {
+          console.log(`[${new Date().toLocaleTimeString()}] Analysis completed, navigating to results`);
+          clearInterval(pollInterval);
+          showProcessingComplete('Analysis Processing', notificationProcessId, true);
               navigate(`/analysis/${id}`);
-            } else {
-              setError('Analysis completed but no results found.');
-              clearInterval(interval);
-            }
-          } else if (results && Array.isArray(results.results)) {
-            if (results.results.length > 0) {
-              navigate(`/analysis/${id}`);
-            } else {
-              setError('Analysis completed but no results found.');
-              clearInterval(interval);
-            }
-          } else if (results && results.status) {
-            if (results.status === 'failed') {
+        } else if (status === 'failed') {
+          console.log(`[${new Date().toLocaleTimeString()}] Analysis failed`);
+          clearInterval(pollInterval);
+          showProcessingComplete('Analysis Processing', notificationProcessId, false);
               setError('Analysis failed. Please try again.');
-              clearInterval(interval);
-            } // else keep polling for 'pending' or 'processing'
-          } else {
-            setRetryCount((c) => c + 1);
-          }
-        } catch (err) {
-          // If 404, keep polling; if other error, show error
-          if (err.message && !err.message.includes('404')) {
-            setError('Error checking analysis results.');
-            clearInterval(interval);
+        }
+        
+        setRetryCount((prev: number) => prev + 1);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.error(`[${new Date().toLocaleTimeString()}] Polling error:`, err);
+        setLastResponse(`error: ${errorMessage}`);
+        if (retryCount > 20) {
+          clearInterval(pollInterval);
+          showProcessingComplete('Analysis Processing', notificationProcessId, false);
+          setError('Taking too long. Please check back later.');
           }
         }
       }, 3000);
-    }
-    return () => clearInterval(interval);
-  }, [id, navigate]);
+
+    return () => {
+      isActive = false;
+      clearInterval(pollInterval);
+      // If component unmounts without completing, show a neutral message
+      if (processId) {
+        showProcessingComplete('Analysis Processing', processId, false);
+      }
+    };
+  }, [id, navigate, retryCount, showProcessingStart, showProcessingComplete, processId]);
 
   if (!id) {
     return (

@@ -1,48 +1,54 @@
-import React, { useState, useMemo } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import Layout from './components/Layout.tsx';
-import Dashboard from './pages/Dashboard.tsx';
-import AnalysisForm from './pages/AnalysisForm.tsx';
-import AnalysisResults from './pages/AnalysisResults.tsx';
-import Login from './pages/Login.tsx';
-import AnalysisProcessing from './pages/AnalysisProcessing.tsx';
+import { NotificationProvider } from './contexts/NotificationContext';
+import Layout from './components/Layout';
+import AnalysisForm from './pages/AnalysisForm';
+import AnalysisResults from './pages/AnalysisResults';
+import Dashboard from './pages/Dashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 
-const App: React.FC = () => {
-  const [mode, setMode] = useState<'light' | 'dark'>('light');
-  const toggleMode = () => setMode((prev) => (prev === 'light' ? 'dark' : 'light'));
-  const theme = useMemo(() => createTheme({
-    palette: {
-      mode,
-      primary: {
-        main: '#1976d2',
-      },
-      secondary: {
-        main: '#dc004e',
-      },
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#90caf9',
     },
-  }), [mode]);
+    secondary: {
+      main: '#f48fb1',
+    },
+  },
+});
+
+function App() {
+  const [mode, setMode] = useState<'light' | 'dark'>('dark');
+
+  const toggleMode = () => {
+    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  };
 
   return (
-    <ThemeProvider theme={theme}>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Router>
-          <Layout mode={mode} toggleMode={toggleMode}>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/new-analysis" element={<AnalysisForm />} />
-              <Route path="/analysis/:id/processing" element={<AnalysisProcessing />} />
-              <Route path="/analysis/:id" element={<AnalysisResults />} />
-            </Routes>
-          </Layout>
-        </Router>
-      </LocalizationProvider>
-    </ThemeProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <NotificationProvider>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <Routes>
+                <Route path="/" element={<Layout mode={mode} toggleMode={toggleMode} />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="new-analysis" element={<AnalysisForm />} />
+                  <Route path="results/:id" element={<AnalysisResults />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </NotificationProvider>
+        </LocalizationProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

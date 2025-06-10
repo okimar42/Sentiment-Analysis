@@ -1,0 +1,90 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: sentiment_analysis
+          POSTGRES_USER: sentiment_analysis
+          POSTGRES_PASSWORD: sentiment_analysis
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U sentiment_analysis" --health-interval=10s --health-timeout=5s --health-retries=5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=5
+    env:
+      DATABASE_URL: postgres://sentiment_analysis:sentiment_analysis@localhost:5432/sentiment_analysis
+      REDIS_URL: redis://localhost:6379/0
+      DJANGO_SETTINGS_MODULE: core.settings
+      PYTHONUNBUFFERED: 1
+      NODE_ENV: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          python manage.py migrate
+          pytest --maxfail=3 --disable-warnings -q
+
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm run test -- --run
+
+      - name: Lint backend
+        run: |
+          cd backend
+          flake8 .
+
+      - name: Lint frontend
+        run: |
+          cd frontend
+          npm run lint 
