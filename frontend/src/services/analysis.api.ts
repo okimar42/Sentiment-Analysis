@@ -11,7 +11,7 @@ export const getAnalyses = async (): Promise<Analysis[]> => {
   }
 
   try {
-    const response = await api.get('analyses/');
+    const response = await api.get('analyze/');
     setCachedData(cacheKey, response.data);
     return response.data;
   } catch (error) {
@@ -23,7 +23,7 @@ export const getAnalyses = async (): Promise<Analysis[]> => {
 export const createAnalysis = async (data: Partial<Analysis>): Promise<Analysis> => {
   try {
     console.log('Creating analysis with data:', data);
-    const response = await api.post('analyses/', data);
+    const response = await api.post('analyze/', data);
     console.log('Analysis creation response:', response.data);
     // Invalidate analyses cache
     clearCache('analyses');
@@ -50,7 +50,7 @@ export const getAnalysis = async (id: string): Promise<Analysis> => {
   }
 
   try {
-    const response = await api.get(`analyses/${id}/`);
+    const response = await api.get(`analyze/${id}/`);
     setCachedData(cacheKey, response.data);
     return response.data;
   } catch (error) {
@@ -68,7 +68,7 @@ export const getAnalysisSummary = async (id: string): Promise<AnalysisSummary> =
   }
 
   try {
-    const response = await api.get(`analyses/${id}/summary/`);
+    const response = await api.get(`analyze/${id}/summary/`);
     setCachedData(cacheKey, response.data);
     return response.data;
   } catch (error) {
@@ -79,7 +79,7 @@ export const getAnalysisSummary = async (id: string): Promise<AnalysisSummary> =
 
 export const getSentimentByDate = async (id: string): Promise<SentimentByDate[]> => {
   try {
-    const response = await api.get(`analyses/${id}/sentiment-by-date/`);
+    const response = await api.get(`analyze/${id}/sentiment-by-date/`);
     return response.data as SentimentByDate[];
   } catch (error) {
     const apiError = error as ApiError;
@@ -90,7 +90,7 @@ export const getSentimentByDate = async (id: string): Promise<SentimentByDate[]>
 
 export const getIQDistribution = async (id: string): Promise<IQDistribution[]> => {
   try {
-    const response = await api.get(`analyses/${id}/iq-distribution/`);
+    const response = await api.get(`analyze/${id}/iq-distribution/`);
     return response.data as IQDistribution[];
   } catch (error) {
     const apiError = error as ApiError;
@@ -101,7 +101,7 @@ export const getIQDistribution = async (id: string): Promise<IQDistribution[]> =
 
 export const getBotAnalysis = async (id: string): Promise<BotAnalysis> => {
   try {
-    const response = await api.get(`analyses/${id}/bot-analysis/`);
+    const response = await api.get(`analyze/${id}/bot-analysis/`);
     return response.data as BotAnalysis;
   } catch (error) {
     const apiError = error as ApiError;
@@ -113,7 +113,7 @@ export const getBotAnalysis = async (id: string): Promise<BotAnalysis> => {
 export const getAnalysisFullDetails = async (id: string): Promise<Analysis & { summary: AnalysisSummary; results: AnalysisResult[] }> => {
   try {
     // Always fetch fresh data when getting full details
-    const response = await api.get(`analyses/${id}/full-details/`);
+    const response = await api.get(`analyze/${id}/full-details/`);
     return response.data;
   } catch (error) {
     const apiError = error as ApiError;
@@ -124,7 +124,7 @@ export const getAnalysisFullDetails = async (id: string): Promise<Analysis & { s
 
 export const getGemmaStatus = async (): Promise<{ available: boolean; status: string }> => {
   try {
-    const response = await api.get('analyses/gemma-status/');
+    const response = await api.get('analyze/gemma-status/');
     return response.data;
   } catch (error) {
     const apiError = error as ApiError;

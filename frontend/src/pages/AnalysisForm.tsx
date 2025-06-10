@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useNotification } from '../contexts/NotificationContext';
 import {
   Container,
   Paper,
@@ -17,7 +16,11 @@ import {
   Checkbox,
   ListItemText,
   FormControlLabel,
+<<<<<<< HEAD
   Grid,
+=======
+  Grid
+>>>>>>> main
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { createAnalysis } from '../services/api';
@@ -89,7 +92,6 @@ interface FormData {
 
 function AnalysisForm() {
   const navigate = useNavigate();
-  const { showProcessingStart, showProcessingComplete } = useNotification();
   const [formData, setFormData] = useState<FormData>({
     query: '',
     source: ['reddit'],
@@ -139,6 +141,7 @@ function AnalysisForm() {
     }
   };
 
+<<<<<<< HEAD
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
@@ -187,6 +190,70 @@ function AnalysisForm() {
     }
   };
 
+=======
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+    
+    // Validation: Require a non-empty query
+    if (!formData.query || formData.query.trim() === '') {
+      setError('Please enter a search query');
+      return;
+    }
+    // Validation: Require at least one model selected
+    if (!formData.selected_llms || formData.selected_llms.length === 0) {
+      setError('Please select at least one model');
+      return;
+    }
+    // Validation: Start date must be before end date
+    if (formData.start_date && formData.end_date && formData.start_date > formData.end_date) {
+      setError('Start date must be before end date');
+      return;
+    }
+    // Use fallback to formData.model if selected_llms is empty, with hardcoded fallback
+    let selectedModels = formData.selected_llms.length > 0 ? formData.selected_llms : [formData.model];
+    if (selectedModels.length === 0 || !selectedModels[0]) {
+      setError('Please select at least one model');
+      return;
+    }
+    try {
+      const payload = {
+        query: formData.query,
+        source: formData.source,
+        model: selectedModels[0].toLowerCase(),
+        subreddits: formData.subreddits,
+        start_date: formData.start_date.toISOString(),
+        end_date: formData.end_date.toISOString(),
+        include_images: formData.include_images,
+        selected_llms: selectedModels.map(model => model.toLowerCase()),
+        enable_sarcasm_detection: formData.selected_features.includes('sarcasm'),
+        enable_iq_analysis: formData.selected_features.includes('iq'),
+        enable_bot_detection: formData.selected_features.includes('bot'),
+      };
+      const result = await createAnalysis(payload);
+      if (!result || !result.id) {
+        setError('Failed to create analysis: No result ID returned');
+        return;
+      }
+      setError('');
+      navigate(`/analysis/${result.id}/processing`);
+    } catch (err: unknown) {
+      console.error('Error creating analysis:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create analysis';
+      setError(errorMessage);
+    }
+  };
+
+  // Add a helper to check if Twitter is selected
+  function hasTwitterSource(analysis: any): boolean {
+    if (!analysis) return false;
+    if (Array.isArray(analysis.source)) {
+      return analysis.source.includes('twitter');
+    }
+    return false;
+  }
+
+>>>>>>> main
   // Add a dedicated handler for the source select
   const handleSourceChange = (event: SelectChangeEvent<string[]>) => {
     const { value } = event.target;
@@ -208,6 +275,11 @@ function AnalysisForm() {
           </Alert>
         )}
         <form onSubmit={handleSubmit} noValidate>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <TextField
@@ -263,6 +335,11 @@ function AnalysisForm() {
                         label="Select LLM Models"
                         placeholder="Choose models"
                         required
+<<<<<<< HEAD
+=======
+                        error={!!error && error.toLowerCase().includes('model')}
+                        helperText={error && error.toLowerCase().includes('model') ? error : ''}
+>>>>>>> main
                       />
                     )}
                     renderOption={(props, option) => {

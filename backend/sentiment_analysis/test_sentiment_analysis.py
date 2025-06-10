@@ -424,7 +424,7 @@ class LoggingAndMonitoringTests(TestCase):
 
 @pytest.mark.skip(reason="DB query speed/integration test is informational and not for CI.")
 def test_sentiment_result_query_speed(db):
-    from sentiment_analysis.models import SentimentResult
+    from .models import SentimentResult
     start = time.time()
     list(SentimentResult.objects.filter(is_ad=False, is_bot=False, score__gte=0.05))
     duration = time.time() - start
@@ -907,7 +907,6 @@ class IntegrationTests(TestCase):
         signal.alarm(10)
         try:
             # Ensure all mocks return quickly and do not call real APIs
-            from sentiment_analysis.models import SentimentResult
             def create_result(*args, **kwargs):
                 SentimentResult.objects.create(
                     sentiment_analysis=analysis,
@@ -1538,7 +1537,7 @@ class SummaryIntegrationTests(TestCase):
     @patch('sentiment_analysis.image_tasks.analyze_with_llms')
     @patch('sentiment_analysis.image_tasks.SentimentResult.objects.filter')
     @patch('sentiment_analysis.tasks.reddit.praw.Reddit')
-    def test_content_summary_in_reddit_analysis_pipeline(self, mock_reddit, mock_filter, mock_llms, mock_summary):
+    def test_content_summary_in_reddit_analysis_pipeline(self, mock_sentiment, mock_filter, mock_llms, mock_reddit, mock_tokenizer, mock_model, mock_torch_load):
         """Test that content summary is generated and saved during Reddit analysis."""
         from sentiment_analysis.image_tasks import analyze_reddit_sentiment
         

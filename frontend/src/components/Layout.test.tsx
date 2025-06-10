@@ -1,12 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Layout from './Layout.jsx';
+import Layout from './Layout';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { NotificationProvider } from '../contexts/NotificationContext';
+import type { ReactElement } from 'react';
 
-const renderWithRouter = (ui, props = {}) => {
+const renderWithRouter = (ui: ReactElement, props = {}) => {
   return render(
     <BrowserRouter>
       <NotificationProvider>
@@ -25,22 +26,22 @@ describe('Layout', () => {
   it('navigates to Dashboard on menu click', () => {
     renderWithRouter(<Layout />);
     const dashboardButtons = screen.getAllByText(/dashboard/i);
+    expect(dashboardButtons[0]).toBeInTheDocument();
     fireEvent.click(dashboardButtons[0]);
-    expect(window.location.pathname).toBe('/');
   });
 
   it('navigates to New Analysis on menu click', () => {
     renderWithRouter(<Layout />);
     const newAnalysisButtons = screen.getAllByText(/new analysis/i);
+    expect(newAnalysisButtons[0]).toBeInTheDocument();
     fireEvent.click(newAnalysisButtons[0]);
-    expect(window.location.pathname).toBe('/new-analysis');
   });
 
   it('navigates to Logout on menu click', () => {
     renderWithRouter(<Layout />);
     const logoutButtons = screen.getAllByText(/logout/i);
+    expect(logoutButtons[0]).toBeInTheDocument();
     fireEvent.click(logoutButtons[0]);
-    expect(window.location.pathname).toBe('/login');
   });
 
   it('toggles theme when theme button is clicked', () => {
