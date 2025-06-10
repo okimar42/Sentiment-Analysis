@@ -264,25 +264,8 @@ else:
     gemma_model = None
 
     def get_model():
-        global gemma_tokenizer, gemma_model
-        if gemma_tokenizer is None or gemma_model is None:
-            try:
-                logger.info("[Gemma] Starting model load with timeout...")
-                import concurrent.futures
-                future = concurrent.futures.ThreadPoolExecutor(max_workers=1).submit(load_model_safely)
-                try:
-                    gemma_tokenizer, gemma_model = future.result(timeout=300)  # 5 minutes
-                    logger.info("[Gemma] Model loaded successfully.")
-                    logger.info("[Gemma] Model and tokenizer are ready for inference.")
-                except concurrent.futures.TimeoutError:
-                    logger.error("[Gemma] Model loading timed out after 5 minutes!")
-                    logger.warning("[Gemma] Continuing without model - will use fallback sentiment analysis.")
-                    return None, None
-            except Exception as e:
-                logger.error(f"Failed to initialize model after all retries: {str(e)}")
-                logger.warning("[Gemma] Continuing without model - will use fallback sentiment analysis.")
-                return None, None
-        return gemma_tokenizer, gemma_model
+        from sentiment_analysis.models.huggingface import get_model as _central_get_model
+        return _central_get_model()
 
     # Rate limiting settings
     INITIAL_DELAY = 3  # Start with 3 seconds between requests

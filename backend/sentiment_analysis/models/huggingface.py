@@ -8,9 +8,17 @@ import gc
 import logging
 from typing import Optional, Tuple, Any
 
-from celery.utils.log import get_task_logger
+# Celery logger is great inside tasks but the same module is imported from
+# regular Django views as well.  Fallback to standard logging when Celery
+# is not configured to avoid noisy import errors in tests or management
+# commands executed outside the worker context.
 
-logger = get_task_logger(__name__)
+try:
+    from celery.utils.log import get_task_logger
+    logger = get_task_logger(__name__)
+except Exception:  # pragma: no cover
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
 
 def verify_huggingface_token() -> Optional[str]:
     """
@@ -69,7 +77,12 @@ def load_model_safely() -> Tuple[Any, Any]:
     """
     try:
         import torch
-        from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+        from transformers import (
+            AutoTokenizer,
+            AutoModelForCausalLM,
+            AutoModelForSequenceClassification,
+            BitsAndBytesConfig,
+        )
         from .vram import select_gemma_model
         
         # Get HuggingFace token
@@ -87,81 +100,97 @@ def load_model_safely() -> Tuple[Any, Any]:
             torch.cuda.empty_cache()
             gc.collect()
 
-        # Initialize tokenizer
-        logger.info("Initializing tokenizer...")
+        # ---------------------------------------------
+        # Tokenizer
+        # ---------------------------------------------
+        logger.info("[Gemma] Initialising tokenizer (%s)…", model_name)
         try:
             tokenizer = AutoTokenizer.from_pretrained(
                 model_name,
                 token=hf_token,
                 trust_remote_code=True,
-                force_download=True,
-                cache_dir="/root/.cache/huggingface",
-                local_files_only=False
+                # Use centralised cache directory so that multiple workers
+                # share downloads inside the Docker container.
+                cache_dir=os.getenv("HF_HOME", "/root/.cache/huggingface"),
+                local_files_only=False,
             )
-            logger.info("Tokenizer initialized successfully")
+            logger.info("[Gemma] Tokenizer ready")
         except Exception as e:
-            logger.error(f"Failed to initialize tokenizer: {str(e)}")
+            logger.error("[Gemma] Unable to load tokenizer: %s", e)
             raise
 
-        # Initialize model with appropriate quantization
-        logger.info("Initializing model...")
+        # ---------------------------------------------
+        # Model
+        # ---------------------------------------------
+        logger.info("[Gemma] Initialising model (%s)…", model_name)
         try:
+            model_cls_preference = [
+                AutoModelForSequenceClassification,
+                AutoModelForCausalLM,
+            ]
+
+            # Select quantisation configuration
+            quantization_config: Optional[BitsAndBytesConfig] = None
+            torch_dtype = None
+
             if quantization == "fp16":
-                model = AutoModelForCausalLM.from_pretrained(
-                    model_name,
-                    torch_dtype=torch.float16,
-                    token=hf_token,
-                    trust_remote_code=True,
-                    force_download=True,
-                    device_map="auto",
-                    cache_dir="/root/.cache/huggingface",
-                    low_cpu_mem_usage=True,
-                    local_files_only=False
-                )
+                import torch
+                torch_dtype = torch.float16
             elif quantization == "8bit":
                 quantization_config = BitsAndBytesConfig(
                     load_in_8bit=True,
-                    llm_int8_enable_fp32_cpu_offload=True
-                )
-                model = AutoModelForCausalLM.from_pretrained(
-                    model_name,
-                    quantization_config=quantization_config,
-                    token=hf_token,
-                    trust_remote_code=True,
-                    device_map="auto",
-                    cache_dir="/root/.cache/huggingface",
-                    low_cpu_mem_usage=True,
-                    local_files_only=False
+                    llm_int8_enable_fp32_cpu_offload=True,
                 )
             elif quantization == "4bit":
+                import torch
                 quantization_config = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_use_double_quant=True,
                     bnb_4bit_quant_type="nf4",
-                    bnb_4bit_compute_dtype=torch.float16
-                )
-                model = AutoModelForCausalLM.from_pretrained(
-                    model_name,
-                    quantization_config=quantization_config,
-                    token=hf_token,
-                    trust_remote_code=True,
-                    device_map="auto",
-                    cache_dir="/root/.cache/huggingface",
-                    low_cpu_mem_usage=True,
-                    local_files_only=False
+                    bnb_4bit_compute_dtype=torch.float16,
                 )
             else:
                 raise ValueError(f"Unknown quantization type: {quantization}")
-                
-            logger.info("Model initialized successfully")
+
+            # Attempt to load a sequence-classification checkpoint first. If the
+            # model card does not provide a classifier head the attempt will
+            # raise a `ValueError: No such configuration class` which we then
+            # fall back to the base causal-LM variant.
+
+            exceptions = []
+            for model_cls in model_cls_preference:
+                try:
+                    model = model_cls.from_pretrained(
+                        model_name,
+                        token=hf_token,
+                        trust_remote_code=True,
+                        device_map="auto",
+                        cache_dir=os.getenv("HF_HOME", "/root/.cache/huggingface"),
+                        low_cpu_mem_usage=True,
+                        torch_dtype=torch_dtype,
+                        quantization_config=quantization_config,
+                        local_files_only=False,
+                    )
+                    logger.info("[Gemma] Model (%s) loaded with %s", model_name, model_cls.__name__)
+                    break
+                except Exception as exc:
+                    exceptions.append(str(exc))
+                    model = None
+            else:
+                # Exhausted both attempts
+                for err in exceptions:
+                    logger.debug("[Gemma] Loader error: %s", err)
+                raise RuntimeError("Failed to load Gemma model – see above for details")
+
+            logger.info("[Gemma] Model ready")
             return tokenizer, model
             
         except Exception as e:
-            logger.error(f"Failed to initialize model: {str(e)}")
+            logger.error("[Gemma] Failed to initialise model: %s", e)
             raise
             
     except Exception as e:
-        logger.error(f"Failed to load model safely: {str(e)}")
+        logger.error("[Gemma] Unhandled error during model load: %s", e)
         raise
 
 # Global model cache
@@ -176,8 +205,13 @@ def get_model() -> Tuple[Any, Any]:
     """
     global _model_cache
     
+    # Honour environment flags for test environments or CPU-only deployments
+    if os.environ.get("NO_LOCAL_LLM") == "1" or os.environ.get("CPU_ONLY") == "1":
+        logger.warning("Local LLM loading is disabled via env flag – returning (None, None)")
+        return None, None
+
     if 'tokenizer' not in _model_cache or 'model' not in _model_cache:
-        logger.info("Loading model for the first time...")
+        logger.info("[Gemma] Loading model for the first time…")
         tokenizer, model = load_model_safely()
         _model_cache['tokenizer'] = tokenizer
         _model_cache['model'] = model

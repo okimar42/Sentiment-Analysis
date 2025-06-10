@@ -50,22 +50,27 @@ def select_gemma_model() -> Tuple[str, str]:
     free_gb = get_free_vram_gb()
     logger.info(f"Detected free VRAM: {free_gb:.2f} GB")
 
-    # More conservative VRAM thresholds
+    # Use larger instruction-tuned variants when there is ample VRAM
+    # Gemma officially provides 2B and 7B checkpoints.
+    # We default to the instruction-tuned ("*-it") variants which are
+    # better suited for downstream tasks out-of-the-box.
+
+    # >=32 GB — 7B full-precision fp16
     if free_gb >= 32:
-        return "google/gemma-2b", "fp16"
+        return "google/gemma-7b-it", "fp16"
+    # >=24 GB — 7B 8-bit
     elif free_gb >= 24:
-        return "google/gemma-2b", "8bit"
+        return "google/gemma-7b-it", "8bit"
+    # >=16 GB — 7B 4-bit
     elif free_gb >= 16:
-        return "google/gemma-2b", "4bit"
-    elif free_gb >= 14:
-        return "google/gemma-2b", "fp16"
-    elif free_gb >= 10:
-        return "google/gemma-2b", "8bit"
+        return "google/gemma-7b-it", "4bit"
+    # Moderate VRAM uses 2B variant with lighter quantization
+    elif free_gb >= 12:
+        return "google/gemma-2b-it", "fp16"
     elif free_gb >= 8:
-        return "google/gemma-2b", "4bit"
-    elif free_gb >= 6:
-        return "google/gemma-2b", "fp16"
+        return "google/gemma-2b-it", "8bit"
     elif free_gb >= 4:
-        return "google/gemma-2b", "8bit"
+        return "google/gemma-2b-it", "4bit"
     else:
-        return "google/gemma-2b", "4bit"
+        # Extremely low memory – still attempt 4-bit loading but expect CPU fallback
+        return "google/gemma-2b-it", "4bit"
