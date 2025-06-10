@@ -68,6 +68,10 @@ def verify_huggingface_token() -> Optional[str]:
                 logger.error(f"Failed to login to Hugging Face after {max_retries} attempts: {str(e)}")
                 raise
 
+    # Fallback return for static type checkers – execution should never reach
+    # this line because the function either returns a valid token or raises.
+    return None  # pragma: no cover
+
 def load_model_safely() -> Tuple[Any, Any]:
     """
     Load HuggingFace model with safe memory management.
@@ -192,6 +196,9 @@ def load_model_safely() -> Tuple[Any, Any]:
     except Exception as e:
         logger.error("[Gemma] Unhandled error during model load: %s", e)
         raise
+
+    # Unreachable fallback for type-checkers
+    return None, None  # pragma: no cover
 
 # Global model cache
 _model_cache = {}

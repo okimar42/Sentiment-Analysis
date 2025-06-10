@@ -7,19 +7,14 @@ drf-spectacular[sidecar]
 # -----------------------------------
 # Typing stub packages to satisfy linters / mypy
 # -----------------------------------
-types-requests
-# Django stubs provide typing for django.*
-django-stubs
-djangorestframework-stubs
 # Celery typing stubs (community maintained)
 celery-types
 # PRAW stubs (Reddit API)
 types-praw
-# Torch stubs (basic coverage for torch.*)
-torch-stubs
-# Local stub provided in repository for HuggingFace Hub
-
-# If Hugging Face hub stubs are not available on PyPI, a local stub module
-# is provided under `typings/` (see repository), but we include the name here
-# to avoid resolver errors if an official package appears later.
+# Local stub packages are provided for aiohttp and torch (see `stubs/`).
 # types-huggingface-hub  # noqa: E501 
+
+# Other stub packages
+types-requests
+django-stubs
+djangorestframework-stubs 

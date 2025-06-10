@@ -75,5 +75,5 @@ types-requests
 django-stubs
 djangorestframework-stubs
 celery-types
-torch-stubs
-# Local stub for HuggingFace Hub is provided in repository (see `stubs/`).
+# Local stub packages are provided for aiohttp and torch (see `stubs/`).
+types-praw
