@@ -11,7 +11,7 @@ export const getAnalysisResults = async (id: string): Promise<AnalysisResult[]> 
   }
 
   try {
-    const response = await api.get(`analyses/${id}/results/`);
+    const response = await api.get(`analyze/${id}/results/`);
     setCachedData(cacheKey, response.data);
     return response.data;
   } catch (error) {
@@ -27,7 +27,7 @@ export const updateSentiment = async (
   reason: string
 ): Promise<AnalysisResult> => {
   try {
-    const response = await api.patch(`analyses/${analysisId}/results/${resultId}/`, {
+    const response = await api.patch(`analyze/${analysisId}/results/${resultId}/`, {
       manual_sentiment: sentiment,
       override_reason: reason
     });
@@ -44,7 +44,7 @@ export const searchAnalysisResults = async (
   params: SearchParams
 ): Promise<{ results: AnalysisResult[]; count: number }> => {
   try {
-    const response = await api.get(`analyses/${id}/search/`, { params });
+    const response = await api.get(`analyze/${id}/search/`, { params });
     return response.data;
   } catch (error) {
     const apiError = error as ApiError;
