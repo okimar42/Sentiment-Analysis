@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../contexts/NotificationContext';
@@ -18,10 +19,6 @@ import {
   Checkbox,
   ListItemText,
   FormControlLabel,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { createAnalysis } from '../services/api';
@@ -153,6 +150,45 @@ function AnalysisForm() {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+    
+    // Use fallback to formData.model if selected_llms is empty, with hardcoded fallback
+    let selectedModels = formData.selected_llms.length > 0 ? formData.selected_llms : [formData.model];
+    
+    // Temporary hardcoded fallback for debugging
+    if (selectedModels.length === 0 || !selectedModels[0]) {
+      selectedModels = ['vader'];
+    }
+    
+    try {
+      const payload = {
+        query: formData.query,
+        source: formData.source,
+        model: selectedModels[0].toLowerCase(), // Convert to lowercase
+        subreddits: formData.subreddits,
+        start_date: formData.start_date.toISOString(),
+        end_date: formData.end_date.toISOString(),
+        include_images: formData.include_images,
+        selected_llms: selectedModels.map(model => model.toLowerCase()), // Convert all to lowercase
+        enable_sarcasm_detection: formData.selected_features.includes('sarcasm'),
+        enable_iq_analysis: formData.selected_features.includes('iq'),
+        enable_bot_detection: formData.selected_features.includes('bot'),
+      };
+      
+      console.log('Submitting payload:', payload);
+      const result = await createAnalysis(payload);
+      console.log('Analysis created successfully:', result);
+      
+      // Simple success message instead of complex reset/navigation
+      setError('');
+      alert(`Analysis created successfully! ID: ${result.id}`);
+      
+    } catch (err: unknown) {
+      console.error('Error creating analysis:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create analysis';
+      setError(errorMessage);
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
@@ -206,8 +242,7 @@ function AnalysisForm() {
     if (Array.isArray(analysis.source)) {
       return analysis.source.includes('twitter');
     }
-    return analysis.source === 'twitter';
-  }
+  };
 
   // Add a dedicated handler for the source select
   const handleSourceChange = (event: SelectChangeEvent<string[]>) => {

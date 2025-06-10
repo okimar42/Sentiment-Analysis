@@ -104,7 +104,8 @@ const AnalysisResults = ({ analysisId }: { analysisId?: string }) => {
         return;
       }
       setSearchResults(results);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Search error:', error);
       setSearchResults({
         results: [],
         total_count: 0,
@@ -114,6 +115,28 @@ const AnalysisResults = ({ analysisId }: { analysisId?: string }) => {
       });
     }
   }, 300);
+
+  // Update search when params change
+  useEffect(() => {
+    if (id) {
+      debouncedSearch(searchParams);
+    }
+  }, [searchParams, id, debouncedSearch]);
+
+  const handleSearchChange = (field: string, value: unknown) => {
+    setSearchParams(prev => ({
+      ...prev,
+      [field]: value,
+      page: 1 // Reset to first page on any search change
+    }));
+  };
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, newPage: number) => {
+    setSearchParams(prev => ({
+      ...prev,
+      page: newPage
+    }));
+  };
 
   const fetchData = useCallback(async () => {
     if (!id) return;
@@ -152,8 +175,9 @@ const AnalysisResults = ({ analysisId }: { analysisId?: string }) => {
       if (data.analysis.status === 'completed' || data.analysis.status === 'failed') {
         setLoading(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch analysis details';
+      setError(errorMessage);
       setLoading(false);
     }
   }, [id]);
@@ -227,17 +251,11 @@ const AnalysisResults = ({ analysisId }: { analysisId?: string }) => {
       }));
       
       await fetchData();
-    } catch (error) {
-      console.error('Error updating sentiment:', error);
+    } catch (error: unknown) {
+      console.error('Error updating result:', error);
+      // Optionally show user-friendly error message
+      setError('Failed to update result. Please try again.');
     }
-  };
-
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setSearchParams(prev => ({ ...prev, page: value }));
-  };
-
-  const handleSortChange = (field: string, value: string) => {
-    setSearchParams(prev => ({ ...prev, [field]: value }));
   };
 
   if (loading) {

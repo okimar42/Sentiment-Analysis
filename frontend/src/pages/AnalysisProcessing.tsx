@@ -44,18 +44,16 @@ function AnalysisProcessing() {
           clearInterval(pollInterval);
           showProcessingComplete('Analysis Processing', notificationProcessId, false);
               setError('Analysis failed. Please try again.');
-        }
-        
-        setRetryCount((prev: number) => prev + 1);
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        console.error(`[${new Date().toLocaleTimeString()}] Polling error:`, err);
-        setLastResponse(`error: ${errorMessage}`);
-        if (retryCount > 20) {
-          clearInterval(pollInterval);
-          showProcessingComplete('Analysis Processing', notificationProcessId, false);
-          setError('Taking too long. Please check back later.');
+              clearInterval(interval);
+            } // else keep polling for 'pending' or 'processing'
+          } else {
+            setRetryCount((c) => c + 1);
           }
+        } catch (err: unknown) {
+          console.error('Failed to fetch analysis results', err);
+          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch analysis results';
+          setError(errorMessage);
+          clearInterval(interval);
         }
       }, 3000);
 
