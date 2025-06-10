@@ -10,8 +10,8 @@ drf-spectacular[sidecar]
 # Celery typing stubs (community maintained)
 celery-types
 # PRAW stubs (Reddit API)
-types-praw
-# Local stub packages are provided for aiohttp and torch (see `stubs/`).
+# types-praw
+# Local stub packages are provided for aiohttp, torch, and praw (see `stubs/`).
 # types-huggingface-hub  # noqa: E501 
 
 # Other stub packages

@@ -1,6 +1,39 @@
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Union, ContextManager
+from types import TracebackType
 
-float16: Any
+# Basic tensor type
+class Tensor:
+    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
+    def __getitem__(self, key: Any) -> "Tensor": ...
+    def __sub__(self, other: Any) -> "Tensor": ...
+    def __add__(self, other: Any) -> "Tensor": ...
+    def softmax(self, dim: int) -> "Tensor": ...
+
+class dtype:
+    """Torch data type"""
+    pass
+
+# Data types
+float16: dtype
+
+# Tensor creation functions
+def tensor(data: Any, **kwargs: Any) -> Tensor: ...
+def load(f: Any, **kwargs: Any) -> Any: ...
+
+# Neural network functions  
+def softmax(input: Tensor, dim: int) -> Tensor: ...
+
+# Context managers
+class _NoGradGuard:
+    def __enter__(self) -> None: ...
+    def __exit__(
+        self, 
+        exc_type: Optional[type], 
+        exc_val: Optional[BaseException], 
+        exc_tb: Optional[TracebackType]
+    ) -> None: ...
+
+def no_grad() -> _NoGradGuard: ...
 
 class _CudaModule:
     @staticmethod
