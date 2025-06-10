@@ -72,7 +72,6 @@ drf-spectacular[sidecar]
 # Typing stub packages (lightweight; do not pull heavy runtime deps)
 # --------------------------------------------------------------------
 types-requests
-types-numpy
 django-stubs
 djangorestframework-stubs
 celery-types

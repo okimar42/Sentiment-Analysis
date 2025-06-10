@@ -8,7 +8,6 @@ drf-spectacular[sidecar]
 # Typing stub packages to satisfy linters / mypy
 # -----------------------------------
 types-requests
-types-numpy
 # Django stubs provide typing for django.*
 django-stubs
 djangorestframework-stubs
