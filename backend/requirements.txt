@@ -72,11 +72,9 @@ drf-spectacular[sidecar]
 # Typing stub packages (lightweight; do not pull heavy runtime deps)
 # --------------------------------------------------------------------
 types-requests
-types-aiohttp
 types-numpy
 django-stubs
 djangorestframework-stubs
-celery-stubs
-types-praw
+celery-types
 torch-stubs
 # Local stub for HuggingFace Hub is provided in repository (see `stubs/`).

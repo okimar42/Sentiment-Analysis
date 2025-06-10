@@ -8,13 +8,12 @@ drf-spectacular[sidecar]
 # Typing stub packages to satisfy linters / mypy
 # -----------------------------------
 types-requests
-types-aiohttp
 types-numpy
 # Django stubs provide typing for django.*
 django-stubs
 djangorestframework-stubs
 # Celery typing stubs (community maintained)
-celery-stubs
+celery-types
 # PRAW stubs (Reddit API)
 types-praw
 # Torch stubs (basic coverage for torch.*)
