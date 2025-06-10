@@ -6,7 +6,7 @@ import os
 import time
 import gc
 import logging
-from typing import Optional, Tuple, Any
+from typing import Optional, Tuple, Any, Union, List, Type
 
 # Celery logger is great inside tasks but the same module is imported from
 # regular Django views as well.  Fallback to standard logging when Celery
@@ -25,16 +25,16 @@ def verify_huggingface_token() -> Optional[str]:
     Verify and return HuggingFace token with retry logic.
     
     Returns:
-        str: Valid HuggingFace token or None if verification fails
+        Optional[str]: Valid HuggingFace token or None if verification fails
     """
     from huggingface_hub import login, HfFolder
     
-    max_retries = 3
-    retry_delay = 5  # seconds
+    max_retries: int = 3
+    retry_delay: int = 5  # seconds
     
     for attempt in range(max_retries):
         try:
-            hf_token = os.getenv("HUGGINGFACE_TOKEN")
+            hf_token: Optional[str] = os.getenv("HUGGINGFACE_TOKEN")
             if not hf_token:
                 if attempt < max_retries - 1:
                     logger.warning(
@@ -91,11 +91,13 @@ def load_model_safely() -> Tuple[Any, Any]:
         
         # Get HuggingFace token
         try:
-            hf_token = verify_huggingface_token()
+            hf_token: Optional[str] = verify_huggingface_token()
         except Exception as e:
             logger.error(f"Failed to get HuggingFace token: {str(e)}")
             hf_token = None
         
+        model_name: str
+        quantization: str
         model_name, quantization = select_gemma_model()
         logger.info(f"Loading model: {model_name} with quantization: {quantization}")
 
@@ -128,17 +130,16 @@ def load_model_safely() -> Tuple[Any, Any]:
         # ---------------------------------------------
         logger.info("[Gemma] Initialising model (%s)…", model_name)
         try:
-            model_cls_preference = [
+            model_cls_preference: List[Type[Union[AutoModelForSequenceClassification, AutoModelForCausalLM]]] = [
                 AutoModelForSequenceClassification,
                 AutoModelForCausalLM,
             ]
 
             # Select quantisation configuration
             quantization_config: Optional[BitsAndBytesConfig] = None
-            torch_dtype = None
+            torch_dtype: Optional[torch.dtype] = None
 
             if quantization == "fp16":
-                import torch
                 torch_dtype = torch.float16
             elif quantization == "8bit":
                 quantization_config = BitsAndBytesConfig(
@@ -146,7 +147,6 @@ def load_model_safely() -> Tuple[Any, Any]:
                     llm_int8_enable_fp32_cpu_offload=True,
                 )
             elif quantization == "4bit":
-                import torch
                 quantization_config = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_use_double_quant=True,
@@ -161,7 +161,8 @@ def load_model_safely() -> Tuple[Any, Any]:
             # raise a `ValueError: No such configuration class` which we then
             # fall back to the base causal-LM variant.
 
-            exceptions = []
+            exceptions: List[str] = []
+            model: Optional[Any] = None
             for model_cls in model_cls_preference:
                 try:
                     model = model_cls.from_pretrained(
@@ -201,7 +202,7 @@ def load_model_safely() -> Tuple[Any, Any]:
     return None, None  # pragma: no cover
 
 # Global model cache
-_model_cache = {}
+_model_cache: dict = {}
 
 def get_model() -> Tuple[Any, Any]:
     """
@@ -219,6 +220,8 @@ def get_model() -> Tuple[Any, Any]:
 
     if 'tokenizer' not in _model_cache or 'model' not in _model_cache:
         logger.info("[Gemma] Loading model for the first time…")
+        tokenizer: Any
+        model: Any
         tokenizer, model = load_model_safely()
         _model_cache['tokenizer'] = tokenizer
         _model_cache['model'] = model
