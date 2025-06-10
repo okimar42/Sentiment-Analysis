@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../contexts/NotificationContext';
 import {
@@ -13,12 +12,12 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Chip,
   Alert,
   Autocomplete,
   Checkbox,
   ListItemText,
   FormControlLabel,
+  Grid,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { createAnalysis } from '../services/api';
@@ -104,7 +103,6 @@ function AnalysisForm() {
   });
   const [error, setError] = useState<string>('');
   const [customSubreddit, setCustomSubreddit] = useState('');
-  const [selectedModels, setSelectedModels] = useState<string[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
@@ -117,15 +115,6 @@ function AnalysisForm() {
       setFormData({
         ...formData,
         [name]: value as string | string[] | boolean | Date,
-      });
-    }
-  };
-
-  const handleDateChange = (field: string) => (date: Date | null) => {
-    if (date) {
-      setFormData({
-        ...formData,
-        [field]: date,
       });
     }
   };
@@ -150,66 +139,25 @@ function AnalysisForm() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError('');
-    
-    // Use fallback to formData.model if selected_llms is empty, with hardcoded fallback
-    let selectedModels = formData.selected_llms.length > 0 ? formData.selected_llms : [formData.model];
-    
-    // Temporary hardcoded fallback for debugging
-    if (selectedModels.length === 0 || !selectedModels[0]) {
-      selectedModels = ['vader'];
-    }
-    
-    try {
-      const payload = {
-        query: formData.query,
-        source: formData.source,
-        model: selectedModels[0].toLowerCase(), // Convert to lowercase
-        subreddits: formData.subreddits,
-        start_date: formData.start_date.toISOString(),
-        end_date: formData.end_date.toISOString(),
-        include_images: formData.include_images,
-        selected_llms: selectedModels.map(model => model.toLowerCase()), // Convert all to lowercase
-        enable_sarcasm_detection: formData.selected_features.includes('sarcasm'),
-        enable_iq_analysis: formData.selected_features.includes('iq'),
-        enable_bot_detection: formData.selected_features.includes('bot'),
-      };
-      
-      console.log('Submitting payload:', payload);
-      const result = await createAnalysis(payload);
-      console.log('Analysis created successfully:', result);
-      
-      // Simple success message instead of complex reset/navigation
-      setError('');
-      alert(`Analysis created successfully! ID: ${result.id}`);
-      
-    } catch (err: unknown) {
-    } catch (err: unknown) {
-      console.error('Error creating analysis:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create analysis';
-      setError(errorMessage);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create analysis';
-      setError(errorMessage);
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      console.log('Form submitted'); // Debug log
+      console.log('Form submitted');
       
       if (!formData.start_date || !formData.end_date) {
-        console.log('Missing dates:', { start: formData.start_date, end: formData.end_date }); // Debug log
+        console.log('Missing dates:', { start: formData.start_date, end: formData.end_date });
+        setError('Start and end dates are required');
         return;
       }
 
-      console.log('Form data:', formData); // Debug log
+      console.log('Form data:', formData);
       const processId = showProcessingStart('Analysis');
       
       try {
         // Ensure we're using VADER if it's selected
         const selectedModel = formData.selected_llms.includes('vader') ? 'vader' : formData.model;
-        console.log('Selected model:', selectedModel); // Debug log
-        console.log('Selected LLMs:', formData.selected_llms); // Debug log
+        console.log('Selected model:', selectedModel);
+        console.log('Selected LLMs:', formData.selected_llms);
 
         const requestBody = {
           query: formData.query,
@@ -222,10 +170,10 @@ function AnalysisForm() {
           selected_llms: formData.selected_llms,
           selected_features: formData.selected_features
         };
-        console.log('Request body:', requestBody); // Debug log
+        console.log('Request body:', requestBody);
 
         const data = await createAnalysis(requestBody);
-        console.log('Response data:', data); // Debug log
+        console.log('Response data:', data);
         showProcessingComplete('Analysis', processId, true);
         navigate(`/results/${data.id}`);
       } catch (error) {
@@ -236,14 +184,6 @@ function AnalysisForm() {
     } catch (error) {
       console.error('Form submission error:', error);
       setError('An unexpected error occurred while submitting the form');
-    }
-  };
-
-  // Add a helper to check if Twitter is selected
-  function hasTwitterSource(analysis: any): boolean {
-    if (!analysis) return false;
-    if (Array.isArray(analysis.source)) {
-      return analysis.source.includes('twitter');
     }
   };
 
@@ -262,6 +202,11 @@ function AnalysisForm() {
         <Typography variant="h4" gutterBottom>
           Sentiment Analysis
         </Typography>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         <form onSubmit={handleSubmit} noValidate>
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -318,14 +263,12 @@ function AnalysisForm() {
                         label="Select LLM Models"
                         placeholder="Choose models"
                         required
-                        error={!!error}
-                        helperText={error}
                       />
                     )}
                     renderOption={(props, option) => {
-                      const { key, ...otherProps } = props;
+                      const { key: _, ...otherProps } = props;
                       return (
-                        <li key={option} {...otherProps}>
+                        <li {...otherProps}>
                           {MODELS.find(m => m.value === option)?.label || option}
                         </li>
                       );
@@ -352,9 +295,9 @@ function AnalysisForm() {
                         />
                       )}
                       renderOption={(props, option, { selected }) => {
-                        const { key, ...otherProps } = props;
+                        const { key: _, ...otherProps } = props;
                         return (
-                          <li key={option} {...otherProps}>
+                          <li {...otherProps}>
                             <Checkbox
                               style={{ marginRight: 8 }}
                               checked={selected}
@@ -463,7 +406,6 @@ function AnalysisForm() {
                 variant="contained"
                 color="primary"
                 fullWidth
-                onClick={() => console.log('Analyze button clicked')}
                 disabled={!formData.start_date || !formData.end_date}
               >
                 Analyze
