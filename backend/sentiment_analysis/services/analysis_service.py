@@ -3,17 +3,16 @@ Core analysis service for sentiment analysis operations.
 """
 
 from typing import Dict, Any, Optional, List
-from django.db.models import QuerySet  # type: ignore
-from django.db import transaction  # type: ignore
-from celery import current_app  # type: ignore
-from ..serializers import SentimentResultSerializer
+from django.db.models import QuerySet
+from django.db import transaction
+from celery import current_app
 
 
 class AnalysisService:
     """Service for core analysis operations and business logic."""
     
     @staticmethod
-    def create_analysis(data: Dict[str, Any]) -> 'SentimentAnalysis':  # type: ignore
+    def create_analysis(data: Dict[str, Any]) -> 'SentimentAnalysis':
         """
         Create a new sentiment analysis with validation and task dispatch.
         
@@ -32,23 +31,12 @@ class AnalysisService:
                 raise ValueError(f"Missing required field: {field}")
         
         # Create analysis instance
-        analysis_kwargs = {
-            'query': data['query'],
-            'source': data['source'],
-            'model': data['model'],
-            'status': 'pending',
-        }
-        if 'selected_llms' in data:
-            analysis_kwargs['selected_llms'] = data['selected_llms']
-        if 'subreddits' in data:
-            analysis_kwargs['subreddits'] = data['subreddits']
-        if 'start_date' in data:
-            analysis_kwargs['start_date'] = data['start_date']
-        if 'end_date' in data:
-            analysis_kwargs['end_date'] = data['end_date']
-        if 'include_images' in data:
-            analysis_kwargs['include_images'] = data['include_images']
-        analysis = SentimentAnalysis.objects.create(**analysis_kwargs)
+        analysis = SentimentAnalysis.objects.create(
+            query=data['query'],
+            source=data['source'],
+            model=data['model'],
+            status='pending'
+        )
         
         # Dispatch appropriate task based on source
         AnalysisService.dispatch_analysis_task(analysis)
@@ -56,18 +44,18 @@ class AnalysisService:
         return analysis
     
     @staticmethod
-    def dispatch_analysis_task(analysis: 'SentimentAnalysis') -> None:  # type: ignore
+    def dispatch_analysis_task(analysis: 'SentimentAnalysis') -> None:
         """
         Dispatch the appropriate Celery task based on analysis source.
         
         Args:
             analysis: SentimentAnalysis instance to process
         """
-        if any('reddit' in s.lower() for s in analysis.source):
+        if 'reddit' in analysis.source.lower():
             # Import here to avoid circular imports
             from ..tasks.reddit import analyze_reddit_sentiment
             analyze_reddit_sentiment.delay(analysis.id)
-        elif any('twitter' in s.lower() for s in analysis.source):
+        elif 'twitter' in analysis.source.lower():
             from ..tasks.twitter import analyze_twitter_sentiment
             analyze_twitter_sentiment.delay(analysis.id)
         else:
@@ -81,7 +69,7 @@ class AnalysisService:
         result_id: int, 
         manual_sentiment: str, 
         override_reason: str = ""
-    ) -> Optional['SentimentResult']:  # type: ignore
+    ) -> Optional['SentimentResult']:
         """
         Update sentiment of a specific result with manual override.
         
@@ -100,7 +88,7 @@ class AnalysisService:
             with transaction.atomic():
                 result = SentimentResult.objects.select_for_update().get(
                     id=result_id,
-                    sentiment_analysis_id=analysis_id
+                    analysis_id=analysis_id
                 )
                 
                 # Convert manual sentiment to score
@@ -111,8 +99,7 @@ class AnalysisService:
                 }
                 
                 if manual_sentiment.lower() in sentiment_map:
-                    result.manual_sentiment = sentiment_map[manual_sentiment.lower()]
-                    result.manual_override = True
+                    result.manual_sentiment = manual_sentiment.lower()
                     result.override_reason = override_reason
                     result.save()
                     return result
@@ -145,18 +132,15 @@ class AnalysisService:
         Returns:
             Dictionary with paginated results
         """
-        from ..models import SentimentAnalysis, SentimentResult
-        try:
-            analysis = SentimentAnalysis.objects.get(id=analysis_id)
-        except SentimentAnalysis.DoesNotExist:
-            return {'error': 'Analysis not found', 'status': 404}
-        if analysis.status != 'completed':
-            return {'error': 'Analysis not completed', 'status': 202}
+        from ..models import SentimentResult
+        
         # Base queryset
-        queryset = SentimentResult.objects.filter(sentiment_analysis_id=analysis_id)
+        queryset = SentimentResult.objects.filter(analysis_id=analysis_id)
+        
         # Apply filters
         if search:
             queryset = queryset.filter(content__icontains=search)
+        
         if sentiment and sentiment != 'all':
             if sentiment == 'positive':
                 queryset = queryset.filter(final_score__gt=0.05)
@@ -164,6 +148,7 @@ class AnalysisService:
                 queryset = queryset.filter(final_score__lt=-0.05)
             elif sentiment == 'neutral':
                 queryset = queryset.filter(final_score__gte=-0.05, final_score__lte=0.05)
+        
         # Apply ordering
         if ordering:
             if ordering.startswith('-'):
@@ -172,20 +157,35 @@ class AnalysisService:
                 queryset = queryset.order_by(f'-{ordering}')
         else:
             queryset = queryset.order_by('-post_date')
+        
         # Pagination
-        total = queryset.count()
-        if total == 0:
-            return {
-                'count': 0,
-                'results': []
-            }
+        total_count = queryset.count()
         start = (page - 1) * page_size
         end = start + page_size
         results = queryset[start:end]
-        serializer = SentimentResultSerializer(results, many=True)
+        
+        total_pages = (total_count + page_size - 1) // page_size
+        
         return {
-            'count': total,
-            'results': serializer.data
+            'results': [
+                {
+                    'id': result.id,
+                    'content': result.content,
+                    'score': result.final_score,
+                    'post_date': result.post_date.isoformat(),
+                    'perceived_iq': result.perceived_iq,
+                    'bot_probability': result.bot_probability,
+                    'source_type': result.source_type,
+                    'post_id': result.post_id,
+                    'manual_sentiment': result.manual_sentiment,
+                    'override_reason': result.override_reason
+                }
+                for result in results
+            ],
+            'total_count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages
         }
     
     @staticmethod
@@ -197,7 +197,7 @@ class AnalysisService:
             Dictionary with status information
         """
         try:
-            from ..model_utils.gemma import analyze_with_gemma
+            from ..models.gemma import analyze_with_gemma
             
             # Test with a simple text
             test_score = analyze_with_gemma("This is a test")

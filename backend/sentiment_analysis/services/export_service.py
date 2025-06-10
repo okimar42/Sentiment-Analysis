@@ -5,7 +5,7 @@ Export service for sentiment analysis data.
 import csv
 import io
 from typing import Generator, List, Dict, Any
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 
 
 class ExportService:
@@ -26,49 +26,38 @@ class ExportService:
         
         try:
             analysis = SentimentAnalysis.objects.get(id=analysis_id)
+            results = SentimentResult.objects.filter(analysis=analysis)
+            
+            # Create CSV response
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="analysis_{analysis_id}_results.csv"'
+            
+            # Create CSV writer
+            writer = csv.writer(response)
+            
+            # Write header
+            writer.writerow([
+                'ID',
+                'Content',
+                'Score',
+                'Post Date',
+                'Perceived IQ',
+                'Bot Probability',
+                'Source Type',
+                'Post ID',
+                'Manual Sentiment',
+                'Override Reason'
+            ])
+            
+            # Write data rows
+            for result in ExportService._row_generator(results):
+                writer.writerow(result)
+            
+            return response
+            
         except SentimentAnalysis.DoesNotExist:
-            return HttpResponse('Analysis not found', status=404)
-        if analysis.status != 'completed':
-            return JsonResponse({'message': 'Analysis is not completed yet'}, status=202)
-        results = SentimentResult.objects.filter(sentiment_analysis=analysis)
-        
-        # Create CSV response
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="analysis_{analysis_id}_results.csv"'
-        
-        # Create CSV writer
-        writer = csv.writer(response)
-        
-        # Write header
-        writer.writerow([
-            'ID',
-            'Content',
-            'Score',
-            'Post Date',
-            'Perceived IQ',
-            'Bot Probability',
-            'Source Type',
-            'Post ID',
-            'Manual Sentiment',
-            'Override Reason'
-        ])
-        
-        # Write data rows
-        if results.exists():
-            for result in results:
-                writer.writerow([
-                    result.id,
-                    result.content,
-                    result.final_score,
-                    result.post_date,
-                    getattr(result, 'perceived_iq', ''),
-                    getattr(result, 'bot_probability', ''),
-                    getattr(result, 'source_type', ''),
-                    getattr(result, 'manual_sentiment', ''),
-                    getattr(result, 'override_reason', '')
-                ])
-        
-        return response
+            response = HttpResponse('Analysis not found', status=404)
+            return response
     
     @staticmethod
     def _row_generator(results) -> Generator[List[str], None, None]:
@@ -111,7 +100,7 @@ class ExportService:
         
         try:
             analysis = SentimentAnalysis.objects.get(id=analysis_id)
-            results = SentimentResult.objects.filter(sentiment_analysis=analysis)
+            results = SentimentResult.objects.filter(analysis=analysis)
             
             return {
                 'analysis_info': {
