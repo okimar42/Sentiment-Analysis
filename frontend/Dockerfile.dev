@@ -1,8 +1,21 @@
 # Frontend development Dockerfile
 FROM node:20-alpine
+
+# Set working directory
 WORKDIR /app
+
+# Add package files first for better Docker layer caching
 COPY package*.json ./
-RUN npm install
+
+# Clear npm cache and install dependencies
+RUN npm cache clean --force && \
+    npm ci --only=production=false --no-audit --no-fund
+
+# Copy the rest of the application
 COPY . .
+
+# Expose port
 EXPOSE 3000
+
+# Start development server
 CMD ["npm", "run", "dev", "--", "--host"] 
