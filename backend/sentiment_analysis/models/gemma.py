@@ -5,14 +5,14 @@ Gemma model analysis utilities.
 import os
 import sys
 import logging
-from typing import Optional
+from typing import Optional, Tuple, Any, Dict
 from celery.utils.log import get_task_logger
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 logger = get_task_logger(__name__)
 
 # Initialize VADER as fallback
-vader = SentimentIntensityAnalyzer()
+vader: SentimentIntensityAnalyzer = SentimentIntensityAnalyzer()
 
 def analyze_with_gemma(text: str) -> float:
     """
@@ -37,16 +37,19 @@ def analyze_with_gemma(text: str) -> float:
         from .huggingface import get_model
         
         # Lazy load the model
+        tokenizer: Any
+        model: Any
         tokenizer, model = get_model()
         
         if tokenizer is None or model is None:
             logger.info("[Gemma] Using VADER as fallback for sentiment analysis")
-            return vader.polarity_scores(text)['compound']
+            fallback_scores: Dict[str, float] = vader.polarity_scores(text)
+            return fallback_scores['compound']
             
         import torch
         
         # Tokenize input
-        inputs = tokenizer(
+        inputs: Dict[str, Any] = tokenizer(
             text, 
             return_tensors="pt", 
             truncation=True, 
@@ -55,14 +58,15 @@ def analyze_with_gemma(text: str) -> float:
         
         # Run inference
         with torch.no_grad():
-            outputs = model(**inputs)
-            scores = torch.softmax(outputs.logits, dim=1)
+            outputs: Any = model(**inputs)
+            scores: torch.Tensor = torch.softmax(outputs.logits, dim=1)
             
         # Calculate sentiment score
-        sentiment_score = float(scores[0][1] - scores[0][0])
+        sentiment_score: float = float(scores[0][1] - scores[0][0])
         return sentiment_score
         
     except Exception as e:
         logger.error(f"Error in analyze_with_gemma: {str(e)}")
         logger.info("[Gemma] Falling back to VADER due to error")
-        return vader.polarity_scores(text)['compound']
+        error_fallback_scores: Dict[str, float] = vader.polarity_scores(text)
+        return error_fallback_scores['compound']
