@@ -75,4 +75,7 @@ types-requests
 django-stubs
 djangorestframework-stubs
 celery-types
-# Local stub packages are provided for aiohttp, torch, and praw (see `stubs/`).
+types-Pillow
+types-protobuf
+types-setuptools
+# Local stub packages are provided for aiohttp, torch, transformers, huggingface_hub, and praw (see `stubs/`).
