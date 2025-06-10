@@ -186,7 +186,10 @@ function AnalysisForm() {
       alert(`Analysis created successfully! ID: ${result.id}`);
       
     } catch (err: unknown) {
+    } catch (err: unknown) {
       console.error('Error creating analysis:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create analysis';
+      setError(errorMessage);
       const errorMessage = err instanceof Error ? err.message : 'Failed to create analysis';
       setError(errorMessage);
   const handleSubmit = async (e: React.FormEvent) => {
