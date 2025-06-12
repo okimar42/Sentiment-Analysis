@@ -57,6 +57,27 @@ describe('AnalysisForm', () => {
     vi.useRealTimers();
   });
 
+  beforeAll(() => {
+    // Provide a minimal, typed mock for IntersectionObserver used by MUI components
+    class MockIntersectionObserver implements IntersectionObserver {
+      readonly root: Element | null = null;
+      readonly rootMargin = '';
+      readonly thresholds: ReadonlyArray<number> = [];
+      disconnect(): void {/* noop */}
+      observe(): void {/* noop */}
+      takeRecords(): IntersectionObserverEntry[] { return []; }
+      unobserve(): void {/* noop */}
+    }
+    (window as unknown as { IntersectionObserver: typeof MockIntersectionObserver }).IntersectionObserver = MockIntersectionObserver;
+  });
+
+  // Existing ResizeObserver mock
+  global.ResizeObserver = class {
+    observe() {/* noop */}
+    unobserve() {/* noop */}
+    disconnect() {/* noop */}
+  };
+
   it('renders form fields', () => {
     renderWithRouter(<AnalysisForm />);
     expect(screen.getByLabelText(/query/i)).toBeInTheDocument();
