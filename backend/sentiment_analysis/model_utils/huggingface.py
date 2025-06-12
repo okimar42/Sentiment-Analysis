@@ -11,6 +11,9 @@ from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 
+# Global model cache
+_model_cache: dict[str, Any] = {}
+
 
 def verify_huggingface_token() -> Optional[str]:
     """
@@ -168,10 +171,6 @@ def load_model_safely() -> Tuple[Any, Any]:
         raise
 
 
-# Global model cache
-_model_cache = {}
-
-
 def get_model() -> Tuple[Any, Any]:
     """
     Get cached model or load it if not cached.
@@ -179,8 +178,6 @@ def get_model() -> Tuple[Any, Any]:
     Returns:
         Tuple[Any, Any]: (tokenizer, model) pair
     """
-    global _model_cache
-
     if "tokenizer" not in _model_cache or "model" not in _model_cache:
         logger.info("Loading model for the first time...")
         tokenizer, model = load_model_safely()

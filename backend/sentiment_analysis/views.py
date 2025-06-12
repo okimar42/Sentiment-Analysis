@@ -23,6 +23,7 @@ from .serializers import (
     SentimentResultSerializer,
     UserRegistrationSerializer,
 )
+from .image_tasks import get_model  # type: ignore
 
 logger = logging.getLogger(__name__)
 

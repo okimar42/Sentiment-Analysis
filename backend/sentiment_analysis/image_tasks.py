@@ -7,7 +7,7 @@ import sys
 import time
 import warnings
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 import emoji
 import praw
@@ -1055,7 +1055,7 @@ else:
         return emoji_ratio > 0.5
 
     async def detect_sarcasm_batch(
-        texts: List[str], model_name: str = "gpt4", subreddits: List[str] = None
+        texts: List[str], model_name: str = "gpt4", subreddits: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
         try:
             results = []
@@ -1372,9 +1372,9 @@ else:
     async def analyze_with_llms(
         texts: Union[str, List[str]],
         selected_llms: list,
-        selected_features: list = None,
-        image_url: str = None,
-        subreddits: List[str] = None,
+        selected_features: Optional[list] = None,
+        image_url: Optional[str] = None,
+        subreddits: Optional[List[str]] = None,
     ) -> Union[dict, List[dict]]:
         """Analyze text(s) using selected LLMs and features with model-specific rate limiting. Caches LLM results."""
         logger.info(

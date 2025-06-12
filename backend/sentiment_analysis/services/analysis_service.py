@@ -2,18 +2,23 @@
 Core analysis service for sentiment analysis operations.
 """
 
-from typing import Any, Dict, Optional
+from __future__ import annotations
+
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from celery import current_app
 
 from django.db import transaction
+
+if TYPE_CHECKING:
+    from ..models import SentimentAnalysis, SentimentResult
 
 
 class AnalysisService:
     """Service for core analysis operations and business logic."""
 
     @staticmethod
-    def create_analysis(data: Dict[str, Any]) -> "SentimentAnalysis":
+    def create_analysis(data: Dict[str, Any]) -> SentimentAnalysis:
         """
         Create a new sentiment analysis with validation and task dispatch.
 
@@ -45,7 +50,7 @@ class AnalysisService:
         return analysis
 
     @staticmethod
-    def dispatch_analysis_task(analysis: "SentimentAnalysis") -> None:
+    def dispatch_analysis_task(analysis: SentimentAnalysis) -> None:
         """
         Dispatch the appropriate Celery task(s) based on analysis sources.
         """
@@ -71,7 +76,7 @@ class AnalysisService:
         result_id: int,
         manual_sentiment: str,
         override_reason: str = "",
-    ) -> Optional["SentimentResult"]:
+    ) -> Optional[SentimentResult]:
         """
         Update sentiment of a specific result with manual override.
 
