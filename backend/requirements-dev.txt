@@ -12,27 +12,20 @@ mypy==1.8.0
 isort==5.13.2
 flake8-django==1.4.0
 django-stubs==4.2.7
-autoflake==2.2.1
+autoflake==2.2.1 
+drf-spectacular[sidecar]
 
-# Type stubs for third-party libs
-types-emoji
-types-praw
-types-tweepy
+# -----------------------------------
+# Typing stub packages to satisfy linters / mypy
+# -----------------------------------
+# Celery typing stubs (community maintained)
+celery-types
+# PRAW stubs (Reddit API)
+# types-praw
+# Local stub packages are provided for aiohttp, torch, and praw (see `stubs/`).
+# types-huggingface-hub  # noqa: E501 
+
+# Other stub packages
 types-requests
-types-aiohttp
-types-celery
-types-torch
-
-# Django Rest Framework stubs
-djangorestframework-stubs
-
-# Placeholder stubs – mypy will still skip missing, but helps when stubs become available
-types-huggingface-hub
-types-transformers
-
-# Additional stubs
-django-stubs-ext
-types-redis
-types-python-dotenv
-types-google-generativeai
-types-django-debug-toolbar 
+django-stubs
+djangorestframework-stubs 

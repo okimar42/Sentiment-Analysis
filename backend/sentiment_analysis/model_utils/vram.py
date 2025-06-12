@@ -1,5 +1,5 @@
 """
-VRAM management and model selection utilities.
+Deprecated wrapper – delegates to `sentiment_analysis.models.vram`.
 """
 
 from typing import Tuple
@@ -77,3 +77,10 @@ def select_gemma_model() -> Tuple[str, str]:
         return "google/gemma-2b", "8bit"
     else:
         return "google/gemma-2b", "4bit"
+
+from sentiment_analysis.models.vram import get_free_vram_gb, select_gemma_model  # re-export
+
+__all__: Tuple[str, ...] = (
+    "get_free_vram_gb",
+    "select_gemma_model",
+)

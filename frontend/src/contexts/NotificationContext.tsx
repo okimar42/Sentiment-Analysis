@@ -1,9 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { Snackbar, Alert, Slide } from '@mui/material';
 import type { SlideProps } from '@mui/material/Slide';
 import type { AlertProps } from '@mui/material/Alert';
-import type { TransitionProps } from '@mui/material/transitions';
 
 type AlertColor = AlertProps['severity'];
 
