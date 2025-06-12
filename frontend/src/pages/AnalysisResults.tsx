@@ -194,11 +194,12 @@ const AnalysisResults: React.FC = () => {
   }, [fetchData, id]);
 
   // Only search when searchParams changes
+  // The dependency array is intentionally limited to avoid excessive searches
   useEffect(() => {
     if (id) {
       debouncedSearch(searchParams);
     }
-  }, [searchParams, id]);
+  }, [searchParams, id, debouncedSearch]);
 
   // Polling effect
   useEffect(() => {

@@ -15,7 +15,6 @@ function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<{ username: string; password: string }>({ username: '', password: '' });
   const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<boolean>(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -29,7 +28,6 @@ function Login() {
     try {
       const { token } = await login(formData.username, formData.password);
       localStorage.setItem('token', token);
-      setSuccess(true);
       setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err: unknown) {
       console.error('Login error:', err);
