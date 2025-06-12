@@ -117,7 +117,10 @@ describe('AnalysisForm', () => {
     // Select a model
     fireEvent.mouseDown(screen.getByLabelText(/model/i));
     fireEvent.click(screen.getByRole('option', { name: /gpt-4/i }));
-    fireEvent.keyDown(document.activeElement, { key: 'Escape', code: 'Escape' });
+    const activeEl1 = document.activeElement as Element | null;
+    if (activeEl1) {
+      fireEvent.keyDown(activeEl1, { key: 'Escape', code: 'Escape' });
+    }
     fireEvent.click(screen.getByRole('button', { name: /analyze/i }));
     expect(await screen.findByText(/backend error/i)).toBeInTheDocument();
   });
@@ -129,7 +132,10 @@ describe('AnalysisForm', () => {
     // Select a model
     fireEvent.mouseDown(screen.getByLabelText(/model/i));
     fireEvent.click(screen.getByRole('option', { name: /gpt-4/i }));
-    fireEvent.keyDown(document.activeElement, { key: 'Escape', code: 'Escape' });
+    const activeEl1 = document.activeElement as Element | null;
+    if (activeEl1) {
+      fireEvent.keyDown(activeEl1, { key: 'Escape', code: 'Escape' });
+    }
     const analyzeButton = await screen.findByRole('button', { name: /analyze/i });
     fireEvent.click(analyzeButton);
     await waitFor(() => {
@@ -165,10 +171,10 @@ describe('AnalysisForm', () => {
     } else {
       fireEvent.click(redditOptions[0]);
     }
-    fireEvent.keyDown(document.activeElement, { key: 'Escape', code: 'Escape' });
-    const sourceInputs = screen.getAllByLabelText(/source/i);
-    const sourceInput = sourceInputs.find(el => el.getAttribute('role') === 'combobox');
-    if (sourceInput instanceof HTMLElement) fireEvent.blur(sourceInput);
+    const activeEl2 = document.activeElement as Element | null;
+    if (activeEl2) {
+      fireEvent.keyDown(activeEl2, { key: 'Escape', code: 'Escape' });
+    }
     fireEvent.mouseDown(screen.getByLabelText(/model/i));
     const vaderOptions = screen.getAllByText(/VADER/i);
     const vaderOption = vaderOptions.find(el => el.getAttribute && el.getAttribute('role') === 'option');
@@ -177,7 +183,11 @@ describe('AnalysisForm', () => {
     } else {
       fireEvent.click(vaderOptions[0]);
     }
-    fireEvent.keyDown(document.activeElement, { key: 'Escape', code: 'Escape' });
+    const activeEl3 = document.activeElement as Element | null;
+    if (activeEl3) {
+      fireEvent.keyDown(activeEl3, { key: 'Escape', code: 'Escape' });
+    }
+    fireEvent.mouseDown(screen.getByLabelText(/model/i));
     const modelInputs = screen.getAllByLabelText(/model/i);
     const modelInput = modelInputs.find(el => el.getAttribute('role') === 'combobox');
     if (modelInput instanceof HTMLElement) fireEvent.blur(modelInput);

@@ -61,10 +61,10 @@ const hasTwitterSource = (analysis: Analysis | null): boolean => {
 
 interface SearchResultsData {
   results: AnalysisResult[];
-  total_count: number;
+  count: number;
   page: number;
   page_size: number;
-  total_pages: number;
+  total_pages?: number;
 }
 
 const AnalysisResults: React.FC = () => {
@@ -78,7 +78,7 @@ const AnalysisResults: React.FC = () => {
   const [debugFull, setDebugFull] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResultsData>({
     results: [],
-    total_count: 0,
+    count: 0,
     page: 1,
     page_size: 20,
     total_pages: 0
@@ -121,7 +121,7 @@ const AnalysisResults: React.FC = () => {
       console.error('Search error:', error);
       setSearchResults({
         results: [],
-        total_count: 0,
+        count: 0,
         page: 1,
         page_size: 20,
         total_pages: 0

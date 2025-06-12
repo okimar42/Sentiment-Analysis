@@ -15,10 +15,13 @@ beforeAll(() => {
   };
 });
 
-vi.mock('react-router-dom', () => ({
-  ...vi.importActual('react-router-dom'),
-  useParams: () => ({ id: '1' }),
-}));
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as Record<string, unknown>),
+    useParams: () => ({ id: '1' }),
+  };
+});
 
 vi.mock('../services/api', () => {
   const baseData = {
@@ -28,14 +31,14 @@ vi.mock('../services/api', () => {
     iq_distribution: [],
     bot_analysis: {},
     results: [
-      { id: 1, content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
+      { id: '1', content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
     ],
   };
   return {
     getAnalysisFullDetails: vi.fn(() => Promise.resolve(baseData)),
     searchAnalysisResults: vi.fn(() => Promise.resolve({
       results: [
-        { id: 1, content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
+        { id: '1', content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
       ],
       total_count: 1,
       page: 1,
@@ -44,7 +47,7 @@ vi.mock('../services/api', () => {
     })),
     updateSentiment: vi.fn(() => {
       const result = {
-        id: 1,
+        id: '1',
         content: 'test tweet',
         score: 0.5, // 50 after *100
         perceived_iq: 0.5,
@@ -69,7 +72,7 @@ describe('AnalysisResults', () => {
       iq_distribution: [],
       bot_analysis: {},
       results: [
-        { id: 1, content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
+        { id: '1', content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
       ],
     });
   });
