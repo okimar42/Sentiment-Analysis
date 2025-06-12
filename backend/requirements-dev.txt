@@ -34,4 +34,5 @@ types-transformers
 django-stubs-ext
 types-redis
 types-python-dotenv
-types-google-generativeai 
+types-google-generativeai
+types-django-debug-toolbar 

@@ -65,6 +65,9 @@ def verify_huggingface_token() -> Optional[str]:
                 )
                 raise
 
+    # Fallback return to satisfy type checkers (unreachable if exceptions raised)
+    return None
+
 
 def load_model_safely() -> Tuple[Any, Any]:
     """
