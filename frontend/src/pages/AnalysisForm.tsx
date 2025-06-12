@@ -11,7 +11,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Chip,
   Alert,
   Autocomplete,
   Checkbox,
@@ -102,7 +101,6 @@ function AnalysisForm() {
   });
   const [error, setError] = useState<string>('');
   const [customSubreddit, setCustomSubreddit] = useState('');
-  const [selectedModels, setSelectedModels] = useState<string[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
@@ -115,15 +113,6 @@ function AnalysisForm() {
       setFormData({
         ...formData,
         [name]: value as string | string[] | boolean | Date,
-      });
-    }
-  };
-
-  const handleDateChange = (field: string) => (date: Date | null) => {
-    if (date) {
-      setFormData({
-        ...formData,
-        [field]: date,
       });
     }
   };
@@ -168,7 +157,7 @@ function AnalysisForm() {
       return;
     }
     // Use fallback to formData.model if selected_llms is empty, with hardcoded fallback
-    let selectedModels = formData.selected_llms.length > 0 ? formData.selected_llms : [formData.model];
+    const selectedModels = formData.selected_llms.length > 0 ? formData.selected_llms : [formData.model];
     if (selectedModels.length === 0 || !selectedModels[0]) {
       setError('Please select at least one model');
       return;
@@ -179,8 +168,8 @@ function AnalysisForm() {
         source: formData.source,
         model: selectedModels[0].toLowerCase(),
         subreddits: formData.subreddits,
-        start_date: formData.start_date.toISOString(),
-        end_date: formData.end_date.toISOString(),
+        start_date: formData.start_date!.toISOString(),
+        end_date: formData.end_date!.toISOString(),
         include_images: formData.include_images,
         selected_llms: selectedModels.map(model => model.toLowerCase()),
         enable_sarcasm_detection: formData.selected_features.includes('sarcasm'),
@@ -200,15 +189,6 @@ function AnalysisForm() {
       setError(errorMessage);
     }
   };
-
-  // Add a helper to check if Twitter is selected
-  function hasTwitterSource(analysis: any): boolean {
-    if (!analysis) return false;
-    if (Array.isArray(analysis.source)) {
-      return analysis.source.includes('twitter');
-    }
-    return false;
-  }
 
   // Add a dedicated handler for the source select
   const handleSourceChange = (event: SelectChangeEvent<string[]>) => {
@@ -290,14 +270,11 @@ function AnalysisForm() {
                         helperText={error && error.toLowerCase().includes('model') ? error : ''}
                       />
                     )}
-                    renderOption={(props, option) => {
-                      const { key, ...otherProps } = props;
-                      return (
-                        <li key={option} {...otherProps}>
-                          {MODELS.find(m => m.value === option)?.label || option}
-                        </li>
-                      );
-                    }}
+                    renderOption={(props, option) => (
+                      <li {...props}>
+                        {MODELS.find(m => m.value === option)?.label || option}
+                      </li>
+                    )}
                   />
                 </FormControl>
               </Box>
@@ -319,18 +296,15 @@ function AnalysisForm() {
                           placeholder="Choose subreddits"
                         />
                       )}
-                      renderOption={(props, option, { selected }) => {
-                        const { key, ...otherProps } = props;
-                        return (
-                          <li key={option} {...otherProps}>
-                            <Checkbox
-                              style={{ marginRight: 8 }}
-                              checked={selected}
-                            />
-                            <ListItemText primary={option} />
-                          </li>
-                        );
-                      }}
+                      renderOption={(props, option, { selected }) => (
+                        <li {...props}>
+                          <Checkbox
+                            style={{ marginRight: 8 }}
+                            checked={selected}
+                          />
+                          <ListItemText primary={option} />
+                        </li>
+                      )}
                     />
                   </FormControl>
                   <TextField

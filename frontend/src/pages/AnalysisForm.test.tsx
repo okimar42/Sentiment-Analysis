@@ -2,13 +2,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import AnalysisForm from './AnalysisForm';
-import { createAnalysis, getGemmaStatus } from '../services/analysis.api';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
-import type { Mock } from 'vitest';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { NotificationProvider } from '../contexts/NotificationContext';
 
 // Define mockNavigate at the module level
 const mockNavigate = vi.fn();

@@ -1,8 +1,7 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import AnalysisResults from './AnalysisResults.jsx';
-import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import * as api from '../services/api';
 import { NotificationProvider } from '../contexts/NotificationContext';
@@ -43,7 +42,7 @@ vi.mock('../services/api', () => {
       page_size: 20,
       total_pages: 1,
     })),
-    updateSentiment: vi.fn((analysisId, resultId, sentiment, reason) => {
+    updateSentiment: vi.fn(() => {
       const result = {
         id: 1,
         content: 'test tweet',
