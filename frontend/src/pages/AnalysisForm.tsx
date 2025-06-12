@@ -166,7 +166,7 @@ function AnalysisForm() {
     }
     
     // Use fallback to formData.model if selected_llms is empty, with hardcoded fallback
-    let selectedModels = formData.selected_llms.length > 0 ? formData.selected_llms : [formData.model];
+    const selectedModels = formData.selected_llms.length > 0 ? formData.selected_llms : [formData.model];
     if (selectedModels.length === 0 || !selectedModels[0]) {
       setError('Please select at least one model');
       return;
@@ -181,8 +181,8 @@ function AnalysisForm() {
         source: formData.source,
         model: selectedModel.toLowerCase(),
         subreddits: formData.subreddits,
-        start_date: formData.start_date.toISOString(),
-        end_date: formData.end_date.toISOString(),
+        start_date: formData.start_date!.toISOString(),
+        end_date: formData.end_date!.toISOString(),
         include_images: formData.include_images,
         selected_llms: selectedModels.map(model => model.toLowerCase()),
         selected_features: formData.selected_features,
@@ -205,15 +205,6 @@ function AnalysisForm() {
       setError(errorMessage);
     }
   };
-
-  // Add a helper to check if Twitter is selected
-  function hasTwitterSource(analysis: any): boolean {
-    if (!analysis) return false;
-    if (Array.isArray(analysis.source)) {
-      return analysis.source.includes('twitter');
-    }
-    return false;
-  }
 
   // Add a dedicated handler for the source select
   const handleSourceChange = (event: SelectChangeEvent<string[]>) => {

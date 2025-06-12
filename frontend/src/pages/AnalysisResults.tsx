@@ -134,7 +134,8 @@ const AnalysisResults = () => {
   const fetchData = useCallback(async () => {
     if (!id) return;
     try {
-      const data = await getAnalysisFullDetails(id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data: any = await getAnalysisFullDetails(id as string);
       setDebugFull(JSON.stringify(data));
       setDebugStatus(data.status || 'N/A');
       setAnalysis(data);
@@ -163,6 +164,7 @@ const AnalysisResults = () => {
   }, [fetchData, id]);
 
   // Only search when searchParams changes
+  // The dependency array is intentionally limited to avoid excessive searches
   useEffect(() => {
     if (id) {
       debouncedSearch(searchResults);

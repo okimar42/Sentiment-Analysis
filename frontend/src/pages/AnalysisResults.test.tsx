@@ -1,8 +1,7 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import AnalysisResults from './AnalysisResults.jsx';
-import userEvent from '@testing-library/user-event';
+import AnalysisResults from './AnalysisResults';
 import { vi } from 'vitest';
 import * as api from '../services/analysis.api';
 import { NotificationProvider } from '../contexts/NotificationContext';
@@ -16,10 +15,13 @@ beforeAll(() => {
   };
 });
 
-vi.mock('react-router-dom', () => ({
-  ...vi.importActual('react-router-dom'),
-  useParams: () => ({ id: '1' }),
-}));
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as Record<string, unknown>),
+    useParams: () => ({ id: '1' }),
+  };
+});
 
 vi.mock('../services/analysis.api', () => {
   const baseData = {
@@ -29,23 +31,23 @@ vi.mock('../services/analysis.api', () => {
     iq_distribution: [],
     bot_analysis: {},
     results: [
-      { id: 1, content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
+      { id: '1', content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
     ],
   };
   return {
     getAnalysisFullDetails: vi.fn(() => Promise.resolve(baseData)),
     searchAnalysisResults: vi.fn(() => Promise.resolve({
       results: [
-        { id: 1, content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
+        { id: '1', content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
       ],
       total_count: 1,
       page: 1,
       page_size: 20,
       total_pages: 1,
     })),
-    updateSentiment: vi.fn((analysisId, resultId, sentiment, reason) => {
+    updateSentiment: vi.fn(() => {
       const result = {
-        id: 1,
+        id: '1',
         content: 'test tweet',
         score: 0.5, // 50 after *100
         perceived_iq: 0.5,
@@ -70,7 +72,7 @@ describe('AnalysisResults', () => {
       iq_distribution: [],
       bot_analysis: {},
       results: [
-        { id: 1, content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
+        { id: '1', content: 'test tweet', score: 0.2, perceived_iq: 0.5, bot_probability: 0.1, post_date: new Date().toISOString(), source_type: 'twitter' }
       ],
     });
   });

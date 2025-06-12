@@ -1,6 +1,6 @@
 import api from './api.client';
 import { getCachedData, setCachedData } from './cache';
-import type { ApiError, AnalysisResult, SearchParams } from './types';
+import type { AnalysisResult, SearchParams } from './types';
 
 export const getAnalysisResults = async (id: string): Promise<AnalysisResult[]> => {
   const cacheKey = `analysis-results-${id}`;
@@ -15,8 +15,8 @@ export const getAnalysisResults = async (id: string): Promise<AnalysisResult[]> 
     setCachedData(cacheKey, response.data);
     return response.data;
   } catch (error) {
-    const apiError = error as ApiError;
-    throw new Error(apiError.response?.data?.detail || 'Failed to fetch analysis results');
+    console.error('Failed to fetch analysis results:', error);
+    throw new Error('Failed to fetch analysis results');
   }
 };
 
@@ -33,7 +33,6 @@ export const updateSentiment = async (
     });
     return response.data;
   } catch (error) {
-    const apiError = error as ApiError;
     console.error('Error updating sentiment:', error);
     throw error;
   }
@@ -47,7 +46,7 @@ export const searchAnalysisResults = async (
     const response = await api.get(`analyze/${id}/search/`, { params });
     return response.data;
   } catch (error) {
-    const apiError = error as ApiError;
-    throw new Error(apiError.response?.data?.detail || 'Failed to search analysis results');
+    console.error('Failed to search analysis results:', error);
+    throw new Error('Failed to search analysis results');
   }
 };

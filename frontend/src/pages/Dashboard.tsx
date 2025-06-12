@@ -39,20 +39,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleDeleteAnalysis = async (id: string) => {
-    try {
-      await fetch(`/api/analyses/${id}/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Token ${localStorage.getItem('token')}`,
-        },
-      });
-      setAnalyses(analyses.filter((a: Analysis) => a.id !== id));
-    } catch (e: unknown) {
-      console.error('Failed to delete analysis:', e);
-    }
-  };
-
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -149,7 +135,7 @@ const Dashboard: React.FC = () => {
 const DashboardWithBoundary: React.FC = () => {
   try {
     return <Dashboard />;
-  } catch (e) {
+  } catch {
     return (
       <Container maxWidth="lg">
         <Box sx={{ mt: 4, mb: 4 }}>
