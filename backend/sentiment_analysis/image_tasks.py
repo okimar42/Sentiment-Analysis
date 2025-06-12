@@ -327,7 +327,7 @@ else:
     MAX_RETRIES = 5
 
     # Model-specific rate limiting settings
-    RATE_LIMITS = {
+    RATE_LIMITS: Dict[str, Dict[str, Union[int, float]]] = {
         "gpt4": {
             "initial_delay": 2.0,
             "min_delay": 1.0,
@@ -1336,7 +1336,7 @@ else:
 
                         model = genai.GenerativeModel("gemini-pro-vision")
                         response = await model.generate_content(
-                            [
+                            [  # type: ignore[arg-type]
                                 "Analyze this image and provide sentiment, content description, and emotional impact",
                                 {"mime_type": "image/jpeg", "data": image_data},
                             ]

@@ -32,4 +32,6 @@ types-transformers
 
 # Additional stubs
 django-stubs-ext
-types-redis 
+types-redis
+types-python-dotenv
+types-google-generativeai 
