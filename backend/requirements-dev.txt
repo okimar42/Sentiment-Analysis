@@ -24,7 +24,7 @@ types-celery
 types-torch
 
 # Django Rest Framework stubs
-django-rest-framework-stubs
+djangorestframework-stubs
 
 # Placeholder stubs – mypy will still skip missing, but helps when stubs become available
 types-huggingface-hub

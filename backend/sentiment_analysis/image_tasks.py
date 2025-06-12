@@ -7,7 +7,7 @@ import sys
 import time
 import warnings
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Union, Optional, Tuple
 
 import emoji  # type: ignore[import]
 import praw  # type: ignore[import]
@@ -37,7 +37,7 @@ if os.environ.get("NO_LOCAL_LLM") == "1":
     def analyze_reddit_sentiment(*args, **kwargs):
         logger.info("NO_LOCAL_LLM: analyze_reddit_sentiment is a no-op.")
 
-    def get_model() -> tuple[None, None]:
+    def get_model() -> Tuple[Optional[Any], Optional[Any]]:
         logger.info("NO_LOCAL_LLM: get_model is a no-op.")
         return (None, None)
 
@@ -50,7 +50,7 @@ elif os.environ.get("CPU_ONLY") == "1":
     def analyze_reddit_sentiment(*args, **kwargs):
         logger.info("CPU_ONLY: analyze_reddit_sentiment is a no-op.")
 
-    def get_model() -> tuple[None, None]:
+    def get_model() -> Tuple[Optional[Any], Optional[Any]]:
         logger.info("CPU_ONLY: get_model is a no-op.")
         return (None, None)
 
@@ -289,7 +289,7 @@ else:
     gemma_tokenizer = None
     gemma_model = None
 
-    def get_model():
+    def get_model() -> Tuple[Optional[Any], Optional[Any]]:
         global gemma_tokenizer, gemma_model
         if gemma_tokenizer is None or gemma_model is None:
             try:
@@ -686,7 +686,7 @@ else:
         try:
             analysis = SentimentAnalysis.objects.get(id=analysis_id)
             selected_llms = getattr(analysis, "selected_llms", [])
-            selected_features = []
+            selected_features: List[str] = []
             analysis.status = "processing"
             analysis.save()
             logger.info(
@@ -947,7 +947,7 @@ else:
                 for tweet in tweets.data:
                     selected_llms = analysis.selected_llms
                     # For VADER-only analyses, don't include any additional features that require LLM calls
-                    selected_features = []
+                    selected_features: List[str] = []
                     # Check if we have any actual LLM models (not just VADER)
                     llm_models = [
                         model
@@ -1267,7 +1267,7 @@ else:
     async def analyze_image(image_url: str, selected_llms: list) -> Dict[str, Any]:
         client = None
         try:
-            import requests
+            import requests  # type: ignore[import]
 
             response = requests.get(image_url)
             if response.status_code != 200:
@@ -1374,7 +1374,7 @@ else:
     async def analyze_with_llms(
         texts: Union[str, List[str]],
         selected_llms: list,
-        selected_features: Optional[list] = None,
+        selected_features: List[str] = [],
         image_url: Optional[str] = None,
         subreddits: Optional[List[str]] = None,
     ) -> Union[dict, List[dict]]:
