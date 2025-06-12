@@ -21,4 +21,11 @@ types-tweepy
 types-requests
 types-aiohttp
 types-celery
-types-torch 
+types-torch
+
+# Django Rest Framework stubs
+django-rest-framework-stubs
+
+# Placeholder stubs – mypy will still skip missing, but helps when stubs become available
+types-huggingface-hub
+types-transformers 

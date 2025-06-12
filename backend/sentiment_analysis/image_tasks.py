@@ -71,7 +71,7 @@ else:
         import os
         import time
 
-        from huggingface_hub import HfFolder, login
+        from huggingface_hub import HfFolder, login  # type: ignore[import]
 
         max_retries = 3
         retry_delay = 5  # seconds
