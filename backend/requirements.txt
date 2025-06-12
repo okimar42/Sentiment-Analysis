@@ -67,3 +67,15 @@ python-json-logger
 django-debug-toolbar
 
 drf-spectacular[sidecar]
+
+# --------------------------------------------------------------------
+# Typing stub packages (lightweight; do not pull heavy runtime deps)
+# --------------------------------------------------------------------
+types-requests
+django-stubs
+djangorestframework-stubs
+celery-types
+types-Pillow
+types-protobuf
+types-setuptools
+# Local stub packages are provided for aiohttp, torch, transformers, huggingface_hub, and praw (see `stubs/`).

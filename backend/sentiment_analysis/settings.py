@@ -1,7 +1,18 @@
 import contextvars
+import logging
 import os
+import uuid
+from pathlib import Path
 
+import sentry_sdk
+from celery.signals import task_postrun, task_prerun
+from django.utils.deprecation import MiddlewareMixin
 from dotenv import load_dotenv
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env file
 load_dotenv()
@@ -170,10 +181,7 @@ LOGGING = {
     },
 }
 
-import uuid
-
 # --- Request ID Middleware (for contextvars) ---
-from django.utils.deprecation import MiddlewareMixin
 
 
 class RequestIDMiddleware(MiddlewareMixin):
@@ -194,7 +202,6 @@ MIDDLEWARE = [
 ] + [m for m in MIDDLEWARE if m != "sentiment_analysis.settings.RequestIDMiddleware"]
 
 # --- Celery signals to set task_id contextvar ---
-from celery.signals import task_postrun, task_prerun
 
 
 def set_task_id(sender=None, task_id=None, **kwargs):
@@ -209,9 +216,6 @@ task_prerun.connect(set_task_id)
 task_postrun.connect(clear_task_id)
 
 # --- Sentry Integration ---
-import sentry_sdk
-from sentry_sdk.integrations.celery import CeleryIntegration
-from sentry_sdk.integrations.django import DjangoIntegration
 
 SENTRY_DSN = os.getenv("SENTRY_DSN", "")
 if SENTRY_DSN:

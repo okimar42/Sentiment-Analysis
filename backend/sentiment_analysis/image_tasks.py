@@ -316,6 +316,8 @@ else:
                 )
                 return None, None
         return gemma_tokenizer, gemma_model
+        from sentiment_analysis.models.huggingface import get_model as _central_get_model
+        return _central_get_model()
 
     # Rate limiting settings
     INITIAL_DELAY = 3  # Start with 3 seconds between requests
