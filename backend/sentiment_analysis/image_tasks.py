@@ -9,12 +9,12 @@ import warnings
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Union, Optional
 
-import emoji
-import praw
-import tweepy
+import emoji  # type: ignore[import]
+import praw  # type: ignore[import]
+import tweepy  # type: ignore[import]
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer  # type: ignore[import]
 
 from django.conf import settings
 from django.core.cache import cache
@@ -37,8 +37,9 @@ if os.environ.get("NO_LOCAL_LLM") == "1":
     def analyze_reddit_sentiment(*args, **kwargs):
         logger.info("NO_LOCAL_LLM: analyze_reddit_sentiment is a no-op.")
 
-    def get_model(*args, **kwargs):
+    def get_model(*args, **kwargs) -> tuple[None, None]:
         logger.info("NO_LOCAL_LLM: get_model is a no-op.")
+        return (None, None)
 
 elif os.environ.get("CPU_ONLY") == "1":
     logging.basicConfig(level=logging.INFO)
@@ -49,8 +50,9 @@ elif os.environ.get("CPU_ONLY") == "1":
     def analyze_reddit_sentiment(*args, **kwargs):
         logger.info("CPU_ONLY: analyze_reddit_sentiment is a no-op.")
 
-    def get_model(*args, **kwargs):
+    def get_model(*args, **kwargs) -> tuple[None, None]:
         logger.info("CPU_ONLY: get_model is a no-op.")
+        return (None, None)
 
 else:
     # Only import VADER and other non-model libraries here
@@ -121,7 +123,7 @@ else:
         try:
             import subprocess
 
-            import torch
+            import torch  # type: ignore[import]
 
             if torch.cuda.is_available():
                 stats = torch.cuda.mem_get_info()
@@ -175,8 +177,8 @@ else:
 
     def load_model_safely():
         try:
-            import torch
-            from transformers import (
+            import torch  # type: ignore[import]
+            from transformers import (  # type: ignore[import]
                 AutoModelForCausalLM,
                 AutoTokenizer,
                 BitsAndBytesConfig,
@@ -432,7 +434,7 @@ else:
                 model = genai.GenerativeModel("gemini-pro")
                 result = await model.generate_content(messages[1]["content"])
             elif model_name == "grok":
-                import aiohttp
+                import aiohttp  # type: ignore[import]
 
                 url = "https://api.x.ai/v1/chat/completions"
                 headers = {
@@ -486,7 +488,7 @@ else:
             if model_name == "gpt4":
                 import os
 
-                import openai
+                import openai  # type: ignore[import]
 
                 try:
                     client = openai.AsyncOpenAI(
@@ -516,9 +518,9 @@ else:
                     else:
                         try:
                             if model_name in ["gpt4", "grok"]:
-                                parsed = json.loads(result.choices[0].message.content)
+                                parsed = json.loads(result.choices[0].message.content)  # type: ignore[attr-defined]
                             elif model_name == "gemini":
-                                parsed = json.loads(result.text)
+                                parsed = json.loads(result.text)  # type: ignore[attr-defined]
                             results.append({"score": float(parsed.get("score", 0))})
                         except (json.JSONDecodeError, ValueError) as e:
                             logger.error(
@@ -578,7 +580,7 @@ else:
                     if model_name == "gpt4":
                         import os
 
-                        import openai
+                        import openai  # type: ignore[import]
 
                         try:
                             client = openai.AsyncOpenAI(
@@ -591,13 +593,13 @@ else:
                         response = await client.chat.completions.create(
                             model="gpt-4", messages=messages, temperature=0.3
                         )
-                        result = json.loads(response.choices[0].message.content)
+                        result = json.loads(response.choices[0].message.content)  # type: ignore[attr-defined]
                     elif model_name == "gemini":
                         import google.generativeai as genai
 
                         model = genai.GenerativeModel("gemini-pro")
                         response = await model.generate_content(messages[1]["content"])
-                        result = json.loads(response.text)
+                        result = json.loads(response.text)  # type: ignore[attr-defined]
                     elif model_name == "gemma":
                         import torch
 
@@ -1076,7 +1078,7 @@ else:
                     if model_name == "gpt4":
                         import os
 
-                        import openai
+                        import openai  # type: ignore[import]
 
                         try:
                             client = openai.AsyncOpenAI(
@@ -1089,13 +1091,13 @@ else:
                         response = await client.chat.completions.create(
                             model="gpt-4", messages=messages, temperature=0.3
                         )
-                        result = json.loads(response.choices[0].message.content)
+                        result = json.loads(response.choices[0].message.content)  # type: ignore[attr-defined]
                     elif model_name == "gemini":
                         import google.generativeai as genai
 
                         model = genai.GenerativeModel("gemini-pro")
                         response = await model.generate_content(messages[1]["content"])
-                        result = json.loads(response.text)
+                        result = json.loads(response.text)  # type: ignore[attr-defined]
                     elif model_name == "gemma":
                         import torch
 
@@ -1178,7 +1180,7 @@ else:
                     if model_name == "gpt4":
                         import os
 
-                        import openai
+                        import openai  # type: ignore[import]
 
                         try:
                             client = openai.AsyncOpenAI(
@@ -1191,13 +1193,13 @@ else:
                         response = await client.chat.completions.create(
                             model="gpt-4", messages=messages, temperature=0.3
                         )
-                        result = json.loads(response.choices[0].message.content)
+                        result = json.loads(response.choices[0].message.content)  # type: ignore[attr-defined]
                     elif model_name == "gemini":
                         import google.generativeai as genai
 
                         model = genai.GenerativeModel("gemini-pro")
                         response = await model.generate_content(messages[1]["content"])
-                        result = json.loads(response.text)
+                        result = json.loads(response.text)  # type: ignore[attr-defined]
                     elif model_name == "gemma":
                         import torch
 
@@ -1279,7 +1281,7 @@ else:
                     if model == "gpt4":
                         import os
 
-                        import openai
+                        import openai  # type: ignore[import]
 
                         try:
                             client = openai.AsyncOpenAI(
@@ -1315,7 +1317,7 @@ else:
                                 ],
                                 max_tokens=300,
                             )
-                            result = json.loads(response.choices[0].message.content)
+                            result = json.loads(response.choices[0].message.content)  # type: ignore[attr-defined]
                             results["gpt4_image"] = {
                                 "sentiment_score": float(
                                     result.get("sentiment_score", 0)
@@ -1339,7 +1341,7 @@ else:
                                 {"mime_type": "image/jpeg", "data": image_data},
                             ]
                         )
-                        content = response.text
+                        content = response.text  # type: ignore[attr-defined]
                         sentiment_score = 0.0
                         if "positive" in content.lower():
                             sentiment_score = 0.5
@@ -1688,7 +1690,7 @@ else:
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=150,
             )
-            summary = response.choices[0].message.content.strip()
+            summary = response.choices[0].message.content.strip()  # type: ignore[attr-defined]
             cache.set(cache_key, summary, timeout=60 * 60)  # 1 hour
             return summary
         except Exception as e:
