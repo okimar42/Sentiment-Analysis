@@ -12,8 +12,8 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import { getAnalyses } from '../services/api';
-import type { Analysis } from '../services/api';
+import { getAnalyses } from '../services/analysis.api';
+import type { Analysis } from '../services/analysis.api';
 import Grid from '@mui/material/Grid';
 
 const Dashboard: React.FC = () => {

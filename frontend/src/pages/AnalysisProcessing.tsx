@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Paper, Typography, Box, CircularProgress, Alert, Button } from '@mui/material';
-import { getAnalysisFullDetails } from '../services/api';
+import { getAnalysisFullDetails } from '../services/analysis.api';
 import { useNotification } from '../contexts/NotificationContext';
 
 function AnalysisProcessing() {

@@ -1,6 +1,17 @@
 # Frontend development Dockerfile
 FROM node:20-alpine
 
+# Install Docker CLI for buildx support
+RUN apk add --no-cache docker-cli
+
+# Copy buildx plugin from official image
+COPY --from=docker/buildx-bin /buildx /usr/libexec/docker/cli-plugins/docker-buildx
+
+# (Optional) Verify buildx installation
+RUN docker buildx version
+
+# Set working directory
+
 # Set working directory
 WORKDIR /app
 

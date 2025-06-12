@@ -19,7 +19,7 @@ import {
   Grid,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { createAnalysis } from '../services/api';
+import { createAnalysis } from '../services/analysis.api';
 import type { SelectChangeEvent } from '@mui/material/Select';
 
 const SOURCES = [

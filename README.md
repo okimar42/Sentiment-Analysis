@@ -259,3 +259,31 @@ curl -i https://localhost:8080/api/analyses/health/
 ### Extending Monitoring
 - Timing decorators log duration of key operations.
 - For advanced monitoring, consider adding Prometheus metrics or integrating with Grafana, ELK, or other external tools.
+
+## Troubleshooting: Docker Buildx on Arch Linux and Debian/Ubuntu (use context7)
+
+If you encounter errors like `exec format error` or `buildx: command not found` when using Docker Buildx, follow these steps:
+
+1. **Remove any broken or mismatched buildx binaries:**
+   ```sh
+   sudo rm -f ~/.docker/cli-plugins/docker-buildx
+   ```
+2. **Install the official docker-buildx package:**
+   - **Arch Linux:**
+     ```sh
+     paru -S docker-buildx --noconfirm
+     # or use pacman if you don't use an AUR helper:
+     sudo pacman -S docker-buildx
+     ```
+   - **Debian/Ubuntu (apt-based distros):**
+     ```sh
+     sudo apt-get update
+     sudo apt-get install docker-buildx-plugin
+     ```
+3. **Verify installation:**
+   ```sh
+   docker buildx version
+   ```
+   You should see a version string, not an error.
+
+This is required for advanced Docker workflows, multi-arch builds, and for development scripts that use Buildx features.
