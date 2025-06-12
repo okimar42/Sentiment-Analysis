@@ -1,45 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { NotificationProvider } from './contexts/NotificationContext';
-import Layout from './components/Layout';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 import AnalysisForm from './pages/AnalysisForm';
 import AnalysisResults from './pages/AnalysisResults';
 import AnalysisProcessing from './pages/AnalysisProcessing';
-import Dashboard from './pages/Dashboard';
-import ErrorBoundary from './components/ErrorBoundary';
-
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#90caf9',
-    },
-    secondary: {
-      main: '#f48fb1',
-    },
-  },
-});
+import Layout from './components/Layout';
 
 function App() {
-  const [mode, setMode] = useState<'light' | 'dark'>('dark');
-
-  const toggleMode = () => {
-    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-  };
-
   return (
-    <ErrorBoundary>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <NotificationProvider>
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Layout mode={mode} toggleMode={toggleMode} />}>
+        <Route path="/" element={<Layout />}>
                   <Route index element={<Dashboard />} />
                   <Route path="new-analysis" element={<AnalysisForm />} />
                   <Route path="results/:id" element={<AnalysisResults />} />
@@ -49,15 +21,7 @@ function App() {
                 </Route>
               </Routes>
             </BrowserRouter>
-          </NotificationProvider>
-        </LocalizationProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
   );
-}
-
-function Login() {
-  return <div>Login Page</div>;
 }
 
 export default App;

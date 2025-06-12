@@ -85,23 +85,21 @@ class AnalysisService:
             with transaction.atomic():
                 result = SentimentResult.objects.select_for_update().get(
                     id=result_id,
-                    analysis_id=analysis_id
+                    sentiment_analysis_id=analysis_id
                 )
                 
-                # Convert manual sentiment to score
-                sentiment_map = {
-                    'positive': 0.8,
-                    'negative': -0.8,
-                    'neutral': 0.0
-                }
-                
-                if manual_sentiment.lower() in sentiment_map:
-                    result.manual_sentiment = manual_sentiment.lower()
-                    result.override_reason = override_reason
-                    result.save()
-                    return result
+                # Accept manual_sentiment as int or str, always save as int
+                sentiment_map_str_to_num = {'positive': 1, 'neutral': 0, 'negative': -1}
+                if isinstance(manual_sentiment, str):
+                    manual_sentiment_num = sentiment_map_str_to_num.get(manual_sentiment.lower(), 0)
+                elif isinstance(manual_sentiment, int):
+                    manual_sentiment_num = manual_sentiment
                 else:
-                    raise ValueError(f"Invalid sentiment value: {manual_sentiment}")
+                    manual_sentiment_num = 0
+                result.manual_sentiment = manual_sentiment_num
+                result.override_reason = override_reason
+                result.save()
+                return result
                     
         except SentimentResult.DoesNotExist:
             return None
@@ -169,10 +167,10 @@ class AnalysisService:
                     'id': result.id,
                     'content': result.content,
                     'score': result.final_score,
-                    'post_date': result.post_date.isoformat(),
+                    'post_date': result.post_date.isoformat() if result.post_date else None,
                     'perceived_iq': result.perceived_iq,
                     'bot_probability': result.bot_probability,
-                    'source_type': result.source_type,
+                    'source_type': result.source_type or '',
                     'post_id': result.post_id,
                     'manual_sentiment': result.manual_sentiment,
                     'override_reason': result.override_reason

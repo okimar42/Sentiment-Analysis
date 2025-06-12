@@ -55,25 +55,28 @@ class StatisticsService:
         Returns:
             List of dictionaries with date and sentiment data
         """
-        # Group results by date
-        date_groups = defaultdict(list)
+        sentiment_by_date = {}
         for result in results:
+            if not result.post_date:
+                continue  # Skip results with no date
             date_key = result.post_date.date()
-            date_groups[date_key].append(result.final_score)
+            if date_key not in sentiment_by_date:
+                sentiment_by_date[date_key] = []
+            sentiment_by_date[date_key].append(result.final_score)
         
         # Calculate average sentiment per date
-        sentiment_by_date = []
-        for date, scores in date_groups.items():
+        sentiment_by_date_list = []
+        for date, scores in sentiment_by_date.items():
             avg_score = sum(scores) / len(scores) if scores else 0
-            sentiment_by_date.append({
+            sentiment_by_date_list.append({
                 'post_date': date.isoformat(),
                 'avg_score': avg_score,
                 'count': len(scores)
             })
         
         # Sort by date
-        sentiment_by_date.sort(key=lambda x: x['post_date'])
-        return sentiment_by_date
+        sentiment_by_date_list.sort(key=lambda x: x['post_date'])
+        return sentiment_by_date_list
     
     @staticmethod
     def get_iq_distribution(results: Any) -> List[Dict[str, Any]]:
@@ -158,7 +161,7 @@ class StatisticsService:
         
         try:
             analysis = SentimentAnalysis.objects.get(id=analysis_id)
-            results = SentimentResult.objects.filter(analysis=analysis)
+            results = SentimentResult.objects.filter(sentiment_analysis=analysis)
             
             return {
                 'analysis': {
@@ -179,7 +182,7 @@ class StatisticsService:
                         'id': result.id,
                         'content': result.content,
                         'score': result.final_score,
-                        'post_date': result.post_date.isoformat(),
+                        'post_date': result.post_date.isoformat() if result.post_date else None,
                         'perceived_iq': result.perceived_iq,
                         'bot_probability': result.bot_probability,
                         'source_type': result.source_type,

@@ -7,6 +7,7 @@ from factory.django import DjangoModelFactory
 from django.contrib.auth.models import User
 from datetime import datetime, timezone
 from ...models import SentimentAnalysis, SentimentResult
+import pytz
 
 
 class UserFactory(DjangoModelFactory):
@@ -33,6 +34,7 @@ class SentimentAnalysisFactory(DjangoModelFactory):
     model = factory.Iterator(['vader', 'gemma', 'gpt4'])
     status = factory.Iterator(['pending', 'processing', 'completed', 'failed'])
     created_at = factory.LazyFunction(lambda: datetime.now(timezone.utc))
+    user = factory.SubFactory(UserFactory)
 
 
 class SentimentResultFactory(DjangoModelFactory):
@@ -44,11 +46,12 @@ class SentimentResultFactory(DjangoModelFactory):
     analysis = factory.SubFactory(SentimentAnalysisFactory)
     content = factory.Faker('text', max_nb_chars=500)
     score = factory.Faker('pyfloat', left_digits=1, right_digits=3, min_value=-1, max_value=1)
-    post_date = factory.LazyFunction(lambda: datetime.now(timezone.utc))
+    post_date = factory.LazyFunction(lambda: datetime.datetime.now(pytz.UTC))
     perceived_iq = factory.Faker('pyint', min_value=60, max_value=150)
     bot_probability = factory.Faker('pyfloat', left_digits=0, right_digits=2, min_value=0, max_value=1)
-    source_type = factory.Iterator(['reddit', 'twitter'])
+    source_type = 'twitter'
     post_id = factory.Faker('uuid4')
+    grok_score = factory.Faker('pyfloat', left_digits=0, right_digits=2, min_value=0, max_value=1)
 
 
 # Specialized factories for specific test scenarios

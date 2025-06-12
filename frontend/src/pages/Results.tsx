@@ -9,7 +9,7 @@ import {
   Alert,
   Button,
 } from '@mui/material';
-import { getAnalysis, type Analysis } from '../services/api';
+import { getAnalysis, type Analysis } from '../services/analysis.api';
 
 function Results() {
   const { id } = useParams<{ id: string }>();

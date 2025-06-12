@@ -1,4 +1,5 @@
 # Development and test dependencies
+factory-boy
 pytest
 pytest-django
 django-debug-toolbar

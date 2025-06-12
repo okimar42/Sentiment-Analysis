@@ -26,7 +26,7 @@ class ExportService:
         
         try:
             analysis = SentimentAnalysis.objects.get(id=analysis_id)
-            results = SentimentResult.objects.filter(analysis=analysis)
+            results = SentimentResult.objects.filter(sentiment_analysis=analysis)
             
             # Create CSV response
             response = HttpResponse(content_type='text/csv')
@@ -75,7 +75,7 @@ class ExportService:
                 result.id,
                 result.content,
                 result.final_score,
-                result.post_date.isoformat(),
+                result.post_date.isoformat() if result.post_date else '',
                 result.perceived_iq or '',
                 result.bot_probability or '',
                 result.source_type or '',
@@ -100,7 +100,7 @@ class ExportService:
         
         try:
             analysis = SentimentAnalysis.objects.get(id=analysis_id)
-            results = SentimentResult.objects.filter(analysis=analysis)
+            results = SentimentResult.objects.filter(sentiment_analysis=analysis)
             
             return {
                 'analysis_info': {
