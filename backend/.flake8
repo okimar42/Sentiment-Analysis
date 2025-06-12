@@ -1,0 +1,32 @@
+[flake8]
+max-line-length = 88
+exclude = 
+    .git,
+    __pycache__,
+    migrations,
+    venv,
+    .venv,
+    .pytest_cache,
+    .mypy_cache,
+    build,
+    dist,
+    *.egg-info
+
+# Ignore specific error codes
+ignore = 
+    E203,
+    W503,
+    DJ01
+    
+per-file-ignores =
+    # Django settings can have long lines and star imports
+    */settings.py:E501,F403,F405
+    # Django URLs can have long lines
+    */urls.py:E501
+    # Tests can have long lines and unused imports
+    */test_*.py:E501,F401
+    */tests/*.py:E501,F401
+    # __init__.py files can have unused imports
+    */__init__.py:F401
+
+max-complexity = 10 

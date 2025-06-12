@@ -1,8 +1,38 @@
 # Frontend development Dockerfile
 FROM node:20-alpine
+
+# Install Docker CLI for buildx support
+RUN apk add --no-cache docker-cli
+
+# Copy buildx plugin from official image
+COPY --from=docker/buildx-bin /buildx /usr/libexec/docker/cli-plugins/docker-buildx
+
+# (Optional) Verify buildx installation
+RUN docker buildx version
+
+# Set working directory
+
+# Set working directory
 WORKDIR /app
+
+# Add package files first for better Docker layer caching
 COPY package*.json ./
-RUN npm install
+COPY .npmrc ./
+
+# Install dependencies with fallback logic
+RUN if [ -f package-lock.json ]; then \
+        echo "Using npm ci for reproducible install..."; \
+        npm ci --only=production=false --no-audit --no-fund; \
+    else \
+        echo "No package-lock.json found, using npm install..."; \
+        npm install --no-audit --no-fund; \
+    fi
+
+# Copy the rest of the application
 COPY . .
+
+# Expose port
 EXPOSE 3000
+
+# Start development server
 CMD ["npm", "run", "dev", "--", "--host"] 

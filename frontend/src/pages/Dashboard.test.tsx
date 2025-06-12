@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Dashboard from './Dashboard.jsx';
-import { getAnalyses } from '../services/api';
+import { getAnalyses } from '../services/analysis.api';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { NotificationProvider } from '../contexts/NotificationContext';

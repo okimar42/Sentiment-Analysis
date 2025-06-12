@@ -1,5 +1,31 @@
 # Development and test dependencies
+factory-boy
 pytest
 pytest-django
 django-debug-toolbar
-drf-spectacular[sidecar] 
+drf-spectacular[sidecar]
+
+# Linting and formatting tools
+flake8==6.1.0
+black==23.12.1
+mypy==1.8.0
+isort==5.13.2
+flake8-django==1.4.0
+django-stubs==4.2.7
+autoflake==2.2.1 
+drf-spectacular[sidecar]
+
+# -----------------------------------
+# Typing stub packages to satisfy linters / mypy
+# -----------------------------------
+# Celery typing stubs (community maintained)
+celery-types
+# PRAW stubs (Reddit API)
+# types-praw
+# Local stub packages are provided for aiohttp, torch, and praw (see `stubs/`).
+# types-huggingface-hub  # noqa: E501 
+
+# Other stub packages
+types-requests
+django-stubs
+djangorestframework-stubs 

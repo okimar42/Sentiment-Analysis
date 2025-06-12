@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import AnalysisResults from './AnalysisResults';
 import { vi } from 'vitest';
-import * as api from '../services/api';
+import * as api from '../services/analysis.api';
 import { NotificationProvider } from '../contexts/NotificationContext';
 
 // Mock ResizeObserver for recharts and MUI
@@ -23,7 +23,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
-vi.mock('../services/api', () => {
+vi.mock('../services/analysis.api', () => {
   const baseData = {
     analysis: { query: 'test', status: 'completed', source: ['twitter'], twitter_grok_summary: 'Grok says: bullish!' },
     summary: { total_posts: 1, average_score: 0.5, sentiment_distribution: { positive: 1, negative: 0, neutral: 0 }, sentiment_percentages: { positive: 100, negative: 0, neutral: 0 } },

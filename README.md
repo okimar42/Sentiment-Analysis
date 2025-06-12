@@ -492,42 +492,30 @@ curl -i https://localhost:8080/api/analyses/health/
 - Structured logging with JSON format and request/task IDs.
 - For advanced monitoring, consider adding Prometheus metrics or integrating with Grafana, ELK, or other external tools.
 
-## Development Tools & Utilities
+## Troubleshooting: Docker Buildx on Arch Linux and Debian/Ubuntu (use context7)
 
-### Auto-Rebuild System
-The project includes intelligent auto-rebuilding that detects changes in:
-- Backend requirements files (`requirements*.txt`)
-- Dockerfile changes
-- Build mode changes (CPU/GPU flags)
+If you encounter errors like `exec format error` or `buildx: command not found` when using Docker Buildx, follow these steps:
 
-```bash
-# Manual auto-rebuild check
-./dev.sh auto-rebuild
+1. **Remove any broken or mismatched buildx binaries:**
+   ```sh
+   sudo rm -f ~/.docker/cli-plugins/docker-buildx
+   ```
+2. **Install the official docker-buildx package:**
+   - **Arch Linux:**
+     ```sh
+     paru -S docker-buildx --noconfirm
+     # or use pacman if you don't use an AUR helper:
+     sudo pacman -S docker-buildx
+     ```
+   - **Debian/Ubuntu (apt-based distros):**
+     ```sh
+     sudo apt-get update
+     sudo apt-get install docker-buildx-plugin
+     ```
+3. **Verify installation:**
+   ```sh
+   docker buildx version
+   ```
+   You should see a version string, not an error.
 
-# Auto-rebuild is automatically run when using ./dev.sh start
-```
-
-### Test Analysis Utility
-A Python utility for analyzing test structure:
-
-```bash
-python analyze_tests.py
-```
-
-This tool provides insights into:
-- Test file structure and organization
-- Test class and function counts
-- Import dependencies
-- Pytest fixtures
-
-### Development Scripts
-- `dev.sh` - Main development workflow script
-- `scripts/auto_rebuild.sh` - Intelligent rebuild detection
-- `backend/entrypoint.sh` - Container initialization
-- `backend/check_gpu.sh` - GPU capability detection
-- `backend/load_model.py` - AI model loading utilities
-
-### Cache Management
-- Build cache files (`.last_build_*.cache`) track dependency changes
-- Docker BuildKit cache for faster builds
-- Registry-based cache for multi-platform builds
+This is required for advanced Docker workflows, multi-arch builds, and for development scripts that use Buildx features.

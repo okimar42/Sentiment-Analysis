@@ -16,10 +16,10 @@ import {
   Checkbox,
   ListItemText,
   FormControlLabel,
-  Grid
+  Grid,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { createAnalysis } from '../services/api';
+import { createAnalysis } from '../services/analysis.api';
 import type { SelectChangeEvent } from '@mui/material/Select';
 
 const SOURCES = [
@@ -146,41 +146,57 @@ function AnalysisForm() {
       setError('Please enter a search query');
       return;
     }
+    
     // Validation: Require at least one model selected
     if (!formData.selected_llms || formData.selected_llms.length === 0) {
       setError('Please select at least one model');
       return;
     }
+    
     // Validation: Start date must be before end date
     if (formData.start_date && formData.end_date && formData.start_date > formData.end_date) {
       setError('Start date must be before end date');
       return;
     }
+    
+    // Validation: Require start and end dates
+    if (!formData.start_date || !formData.end_date) {
+      setError('Start and end dates are required');
+      return;
+    }
+    
     // Use fallback to formData.model if selected_llms is empty, with hardcoded fallback
     const selectedModels = formData.selected_llms.length > 0 ? formData.selected_llms : [formData.model];
     if (selectedModels.length === 0 || !selectedModels[0]) {
       setError('Please select at least one model');
       return;
     }
+    
     try {
+      // Ensure we're using VADER if it's selected
+      const selectedModel = formData.selected_llms.includes('vader') ? 'vader' : selectedModels[0];
+      
       const payload = {
         query: formData.query,
         source: formData.source,
-        model: selectedModels[0].toLowerCase(),
+        model: selectedModel.toLowerCase(),
         subreddits: formData.subreddits,
         start_date: formData.start_date!.toISOString(),
         end_date: formData.end_date!.toISOString(),
         include_images: formData.include_images,
         selected_llms: selectedModels.map(model => model.toLowerCase()),
+        selected_features: formData.selected_features,
         enable_sarcasm_detection: formData.selected_features.includes('sarcasm'),
         enable_iq_analysis: formData.selected_features.includes('iq'),
         enable_bot_detection: formData.selected_features.includes('bot'),
       };
+      
       const result = await createAnalysis(payload);
       if (!result || !result.id) {
         setError('Failed to create analysis: No result ID returned');
         return;
       }
+      
       setError('');
       navigate(`/analysis/${result.id}/processing`);
     } catch (err: unknown) {
@@ -205,12 +221,12 @@ function AnalysisForm() {
         <Typography variant="h4" gutterBottom>
           Sentiment Analysis
         </Typography>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         <form onSubmit={handleSubmit} noValidate>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <TextField
@@ -270,11 +286,14 @@ function AnalysisForm() {
                         helperText={error && error.toLowerCase().includes('model') ? error : ''}
                       />
                     )}
-                    renderOption={(props, option) => (
-                      <li {...props}>
-                        {MODELS.find(m => m.value === option)?.label || option}
-                      </li>
-                    )}
+                    renderOption={(props, option) => {
+                      const { key: _, ...otherProps } = props;
+                      return (
+                        <li {...otherProps}>
+                          {MODELS.find(m => m.value === option)?.label || option}
+                        </li>
+                      );
+                    }}
                   />
                 </FormControl>
               </Box>
@@ -296,15 +315,18 @@ function AnalysisForm() {
                           placeholder="Choose subreddits"
                         />
                       )}
-                      renderOption={(props, option, { selected }) => (
-                        <li {...props}>
-                          <Checkbox
-                            style={{ marginRight: 8 }}
-                            checked={selected}
-                          />
-                          <ListItemText primary={option} />
-                        </li>
-                      )}
+                      renderOption={(props, option, { selected }) => {
+                        const { key: _, ...otherProps } = props;
+                        return (
+                          <li {...otherProps}>
+                            <Checkbox
+                              style={{ marginRight: 8 }}
+                              checked={selected}
+                            />
+                            <ListItemText primary={option} />
+                          </li>
+                        );
+                      }}
                     />
                   </FormControl>
                   <TextField
@@ -405,7 +427,6 @@ function AnalysisForm() {
                 variant="contained"
                 color="primary"
                 fullWidth
-                onClick={() => console.log('Analyze button clicked')}
                 disabled={!formData.start_date || !formData.end_date}
               >
                 Analyze
