@@ -37,7 +37,7 @@ if os.environ.get("NO_LOCAL_LLM") == "1":
     def analyze_reddit_sentiment(*args, **kwargs):
         logger.info("NO_LOCAL_LLM: analyze_reddit_sentiment is a no-op.")
 
-    def get_model(*args, **kwargs) -> tuple[None, None]:
+    def get_model() -> tuple[None, None]:
         logger.info("NO_LOCAL_LLM: get_model is a no-op.")
         return (None, None)
 
@@ -50,7 +50,7 @@ elif os.environ.get("CPU_ONLY") == "1":
     def analyze_reddit_sentiment(*args, **kwargs):
         logger.info("CPU_ONLY: analyze_reddit_sentiment is a no-op.")
 
-    def get_model(*args, **kwargs) -> tuple[None, None]:
+    def get_model() -> tuple[None, None]:
         logger.info("CPU_ONLY: get_model is a no-op.")
         return (None, None)
 
