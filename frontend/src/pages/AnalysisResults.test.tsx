@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import AnalysisResults from './AnalysisResults.jsx';
+import AnalysisResults from './AnalysisResults';
 import { vi } from 'vitest';
 import * as api from '../services/api';
 import { NotificationProvider } from '../contexts/NotificationContext';
