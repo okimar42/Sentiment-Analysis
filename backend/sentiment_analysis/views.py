@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.request import Request  # type: ignore[import]
 
 from django.conf import settings
 from django.db import models
@@ -62,7 +63,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
     serializer_class = SentimentAnalysisSerializer
     schema = AutoSchema()
 
-    def update_result(self, request, pk=None, result_id=None):
+    def update_result(self, request: Request, pk: int | None = None, result_id: int | None = None) -> Response:
         """Update a specific result's sentiment score."""
         try:
             analysis = self.get_object()
@@ -94,7 +95,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
             )
 
     @action(detail=False, methods=["get"])
-    def health(self, request):
+    def health(self, request: Request) -> Response:
         """Health check endpoint."""
         try:
             SentimentAnalysis.objects.count()
@@ -185,7 +186,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
         return Response(get_analysis_summary(results))
 
     @action(detail=True, methods=["get"], url_path="sentiment-by-date")
-    def sentiment_by_date(self, request, pk=None):
+    def sentiment_by_date(self, request: Request, pk: int | None = None) -> Response:
         """Get sentiment scores grouped by date using final_score."""
         analysis = get_object_or_404(SentimentAnalysis, pk=pk)
         results = (
@@ -217,7 +218,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
         return Response(sentiment_by_date)
 
     @action(detail=True, methods=["get"], url_path="iq-distribution")
-    def iq_distribution(self, request, pk=None):
+    def iq_distribution(self, request: Request, pk: int | None = None) -> Response:
         """Get distribution of perceived IQ scores."""
         analysis = get_object_or_404(SentimentAnalysis, pk=pk)
         results = (
@@ -238,7 +239,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
         return Response(iq_distribution)
 
     @action(detail=True, methods=["get"], url_path="bot-analysis")
-    def bot_analysis(self, request, pk=None):
+    def bot_analysis(self, request: Request, pk: int | None = None) -> Response:
         """Get bot detection analysis results."""
         analysis = get_object_or_404(SentimentAnalysis, pk=pk)
         results = (
@@ -264,7 +265,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
         return Response(bot_analysis)
 
     @action(detail=True, methods=["get"], url_path="full-details")
-    def full_details(self, request, pk=None):
+    def full_details(self, request: Request, pk: int | None = None) -> Response:
         """
         Return all relevant data for an analysis in a single response:
         - analysis metadata
@@ -387,7 +388,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
             )
 
     @action(detail=False, methods=["get"], url_path="gemma-status")
-    def gemma_status(self, request):
+    def gemma_status(self, request: Request) -> Response:
         """Check the status of the Gemma model."""
         try:
             tokenizer, model = get_model()
@@ -400,7 +401,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
             return Response({"status": "error"})
 
     @action(detail=True, methods=["get"], url_path="search")
-    def search_results(self, request, pk=None):
+    def search_results(self, request: Request, pk: int | None = None) -> Response:
         """Search results with advanced filtering and sorting."""
         analysis = get_object_or_404(SentimentAnalysis, pk=pk)
         # Return all posts for the analysis, no is_ad filter
@@ -466,7 +467,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True, methods=["get"], url_path="export-csv")
-    def export_csv(self, request, pk=None):
+    def export_csv(self, request: Request, pk: int | None = None) -> Response:
         """Export analysis results as CSV."""
         analysis = get_object_or_404(SentimentAnalysis, pk=pk)
         if analysis.status != "completed":
@@ -543,7 +544,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
         return response
 
     @action(detail=True, methods=["get"], url_path="debug-results")
-    def debug_results(self, request, pk=None):
+    def debug_results(self, request: Request, pk: int | None = None) -> Response:
         from .models import SentimentResult
 
         analysis = get_object_or_404(SentimentAnalysis, pk=pk)
