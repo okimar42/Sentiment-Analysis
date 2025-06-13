@@ -2,7 +2,7 @@
 Core analysis service for sentiment analysis operations.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 from celery import current_app
 
@@ -69,7 +69,7 @@ class AnalysisService:
     def update_result_sentiment(
         analysis_id: int,
         result_id: int,
-        manual_sentiment: str,
+        manual_sentiment: Union[str, int],
         override_reason: str = "",
     ) -> Optional["SentimentResult"]:
         """

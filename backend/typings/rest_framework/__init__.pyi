@@ -1,0 +1,13 @@
+from typing import Any
+
+class response: ...
+class request: ...
+class status:
+    HTTP_200_OK: int
+    HTTP_400_BAD_REQUEST: int
+
+class decorators:
+    def action(*args: Any, **kwargs: Any) -> Any: ...
+
+class viewsets:
+    class ModelViewSet: ...
