@@ -2,6 +2,9 @@ import api from './api.client';
 import { getCachedData, setCachedData, clearCache } from './cache';
 import type { Analysis, AnalysisSummary, AnalysisResult, BotAnalysis, IQDistribution, SentimentByDate } from './types';
 
+// Re-export Analysis type so other modules can import from this file directly
+export type { Analysis } from './types';
+
 export const getAnalyses = async (): Promise<Analysis[]> => {
   const cacheKey = 'analyses';
   const cachedData = getCachedData(cacheKey);
