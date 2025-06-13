@@ -350,7 +350,12 @@ const AnalysisResults = () => {
                   <InputLabel>Sentiment</InputLabel>
                   <Select
                     value={String(searchResults.sentiment)}
-                    onChange={(e) => setSearchResults(prev => ({ ...prev, sentiment: String(e.target.value) }))}
+                    onChange={(e) =>
+                      setSearchResults((prev) => ({
+                        ...prev,
+                        sentiment: e.target.value as 'positive' | 'neutral' | 'negative' | 'all',
+                      }))
+                    }
                     label="Sentiment"
                   >
                     <MenuItem value="all">All</MenuItem>
@@ -409,7 +414,12 @@ const AnalysisResults = () => {
                   <InputLabel>Sort By</InputLabel>
                   <Select
                     value={String(searchResults.sort_by)}
-                    onChange={(e) => setSearchResults(prev => ({ ...prev, sort_by: String(e.target.value) }))}
+                    onChange={(e) =>
+                      setSearchResults((prev) => ({
+                        ...prev,
+                        sort_by: e.target.value as 'date' | 'sentiment' | 'iq',
+                      }))
+                    }
                     label="Sort By"
                   >
                     <MenuItem value="date">Date</MenuItem>
@@ -424,7 +434,12 @@ const AnalysisResults = () => {
                   <InputLabel>Sort Order</InputLabel>
                   <Select
                     value={String(searchResults.sort_order)}
-                    onChange={(e) => setSearchResults(prev => ({ ...prev, sort_order: String(e.target.value) }))}
+                    onChange={(e) =>
+                      setSearchResults((prev) => ({
+                        ...prev,
+                        sort_order: e.target.value as 'asc' | 'desc',
+                      }))
+                    }
                     label="Sort Order"
                   >
                     <MenuItem value="asc">Ascending</MenuItem>
