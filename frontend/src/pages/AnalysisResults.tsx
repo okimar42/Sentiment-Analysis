@@ -90,22 +90,22 @@ const AnalysisResults = () => {
     total_pages: 1,
   });
   const [sentimentDistType, setSentimentDistType] = useState<'pie' | 'bar'>('pie');
+  const [searchLoading, setSearchLoading] = useState(false);
 
-  // Use inline debounce to avoid dependency warning
   const debouncedSearch = debounce(async (params: SearchParams) => {
     if (!id) return;
+    setSearchLoading(true);
     try {
       const results = await searchAnalysisResults(id, params);
       console.log('API response from searchAnalysisResults:', results);
-      if (!results || !results.results) {
-        return;
+      if (results && results.results) {
+        setSearchResults(prev => ({
+          ...prev,
+          results: results.results,
+          count: results.count,
+          total_pages: Math.ceil(results.count / prev.page_size),
+        }));
       }
-      setSearchResults(prev => ({
-        ...prev,
-        results: results.results,
-        count: results.count,
-        total_pages: Math.ceil(results.count / prev.page_size),
-      }));
     } catch (error: unknown) {
       console.error('Search error:', error);
       setSearchResults(prev => ({
@@ -114,10 +114,12 @@ const AnalysisResults = () => {
         count: 0,
         total_pages: 1,
       }));
+    } finally {
+      setSearchLoading(false);
     }
   }, 300);
 
-  // Update search when params change
+  // The debouncedSearch function is stable due to lodash debounce with empty deps, safe to omit from dependency array.
   useEffect(() => {
     if (id) {
       debouncedSearch(searchResults);
@@ -162,14 +164,6 @@ const AnalysisResults = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData, id]);
-
-  // Only search when searchParams changes
-  // The dependency array is intentionally limited to avoid excessive searches
-  useEffect(() => {
-    if (id) {
-      debouncedSearch(searchResults);
-    }
-  }, [searchResults, id]);
 
   // Polling effect
   useEffect(() => {
@@ -461,7 +455,19 @@ const AnalysisResults = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {searchResults.results.map((result) => (
+                  {searchLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        <CircularProgress size={24} />
+                      </TableCell>
+                    </TableRow>
+                  ) : searchResults.results.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        No results found.
+                      </TableCell>
+                    </TableRow>
+                  ) : searchResults.results.map((result) => (
                     <TableRow key={result.id}>
                       <TableCell>
                         {result.source_type === 'reddit' ? <RedditIcon /> : <TwitterIcon />}

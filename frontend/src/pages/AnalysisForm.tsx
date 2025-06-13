@@ -287,7 +287,8 @@ function AnalysisForm() {
                       />
                     )}
                     renderOption={(props, option) => {
-                      const { key: _, ...otherProps } = props;
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                      const { key, ...otherProps } = props;
                       return (
                         <li {...otherProps}>
                           {MODELS.find(m => m.value === option)?.label || option}
@@ -316,7 +317,8 @@ function AnalysisForm() {
                         />
                       )}
                       renderOption={(props, option, { selected }) => {
-                        const { key: _, ...otherProps } = props;
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        const { key, ...otherProps } = props;
                         return (
                           <li {...otherProps}>
                             <Checkbox
