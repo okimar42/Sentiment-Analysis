@@ -72,6 +72,13 @@ export interface SearchParams {
   search?: string;
   ordering?: string;
   sentiment?: string;
+  sarcasm?: string;
+  bot?: string;
+  min_iq?: number | string;
+  page?: number;
+  page_size?: number;
+  sort_by?: string;
+  sort_order?: string;
   [key: string]: unknown;
 }
 
