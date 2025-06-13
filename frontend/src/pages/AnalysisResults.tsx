@@ -90,22 +90,24 @@ const AnalysisResults = () => {
     total_pages: 1,
   });
   const [sentimentDistType, setSentimentDistType] = useState<'pie' | 'bar'>('pie');
+  // Loading indicator for search/filter queries
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Use inline debounce to avoid dependency warning
   const debouncedSearch = debounce(async (params: SearchParams) => {
     if (!id) return;
     try {
+      setSearchLoading(true);
       const results = await searchAnalysisResults(id, params);
       console.log('API response from searchAnalysisResults:', results);
-      if (!results || !results.results) {
-        return;
+      if (results && results.results) {
+        setSearchResults(prev => ({
+          ...prev,
+          results: results.results,
+          count: results.count,
+          total_pages: Math.ceil(results.count / prev.page_size),
+        }));
       }
-      setSearchResults(prev => ({
-        ...prev,
-        results: results.results,
-        count: results.count,
-        total_pages: Math.ceil(results.count / prev.page_size),
-      }));
     } catch (error: unknown) {
       console.error('Search error:', error);
       setSearchResults(prev => ({
@@ -114,6 +116,8 @@ const AnalysisResults = () => {
         count: 0,
         total_pages: 1,
       }));
+    } finally {
+      setSearchLoading(false);
     }
   }, 300);
 
@@ -461,25 +465,33 @@ const AnalysisResults = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {searchResults.results.map((result) => (
-                    <TableRow key={result.id}>
-                      <TableCell>
-                        {result.source_type === 'reddit' ? <RedditIcon /> : <TwitterIcon />}
-                      </TableCell>
-                      <TableCell>{result.content}</TableCell>
-                      <TableCell>{result.score}</TableCell>
-                      <TableCell>{result.perceived_iq}</TableCell>
-                      <TableCell>{result.bot_probability}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                        >
-                          Edit
-                        </Button>
+                  {searchLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        <CircularProgress size={24} />
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    searchResults.results.map((result) => (
+                      <TableRow key={result.id}>
+                        <TableCell>
+                          {result.source_type === 'reddit' ? <RedditIcon /> : <TwitterIcon />}
+                        </TableCell>
+                        <TableCell>{result.content}</TableCell>
+                        <TableCell>{result.score}</TableCell>
+                        <TableCell>{result.perceived_iq}</TableCell>
+                        <TableCell>{result.bot_probability}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                          >
+                            Edit
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

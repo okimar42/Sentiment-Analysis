@@ -431,11 +431,15 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
             results = results.filter(is_bot=True)
         # Apply IQ filter
         min_iq = request.query_params.get("min_iq")
+        # Only apply IQ filter if a positive value is provided.
+        # Frontend sends "0" by default, which should not restrict results.
         if min_iq is not None:
             try:
-                min_iq = float(min_iq)
-                results = results.filter(perceived_iq__gte=min_iq)
+                min_iq_val = float(min_iq)
+                if min_iq_val > 0:
+                    results = results.filter(perceived_iq__gte=min_iq_val)
             except ValueError:
+                # Ignore invalid values and do not apply the filter
                 pass
         # Apply sorting
         sort_by = request.query_params.get("sort_by", "date")
