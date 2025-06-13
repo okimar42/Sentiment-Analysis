@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Components
 import Layout from './components/Layout';
@@ -14,26 +14,12 @@ import Login from './pages/Login';
 import AnalysisProcessing from './pages/AnalysisProcessing';
 
 function App() {
-  const [mode, setMode] = useState('light');
-  const toggleMode = () => setMode((prev) => (prev === 'light' ? 'dark' : 'light'));
-  const theme = useMemo(() => createTheme({
-    palette: {
-      mode,
-      primary: {
-        main: '#1976d2',
-      },
-      secondary: {
-        main: '#dc004e',
-      },
-    },
-  }), [mode]);
-
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <CssBaseline />
         <Router>
-          <Layout mode={mode} toggleMode={toggleMode}>
+          <Layout>
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/login" element={<Login />} />
