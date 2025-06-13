@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, Dict, Any
 
 from ..utils.sentiment import compute_vader_score
+from ..utils.metrics import get_metrics
 
 
 class SentimentEngine:
@@ -105,6 +106,8 @@ class SentimentEngine:
 
     def _analyze_with_gpt4(self, text: str) -> float:
         try:
+            metrics = get_metrics()
+            
             import os
             import json
 
@@ -138,13 +141,18 @@ class SentimentEngine:
                 )
                 content = response["choices"][0]["message"]["content"]
 
+            metrics.record_api_call(success=True)
             return float(json.loads(content).get("score", 0.0))
         except Exception:
+            from ..utils.metrics import get_metrics
+            get_metrics().record_api_call(success=False, error="GPT-4 API error")
             # Log omission quietly to keep runtime output clean
             return 0.0
 
     def _analyze_with_claude(self, text: str) -> float:
         try:
+            metrics = get_metrics()
+            
             import os
             import json
 
@@ -158,12 +166,17 @@ class SentimentEngine:
                 max_tokens=256,
             )
             content = response.content[0].text  # type: ignore[index]
+            metrics.record_api_call(success=True)
             return float(json.loads(content).get("score", 0.0))
         except Exception:
+            from ..utils.metrics import get_metrics
+            get_metrics().record_api_call(success=False, error="Claude API error")
             return 0.0
 
     def _analyze_with_gemini(self, text: str) -> float:
         try:
+            metrics = get_metrics()
+            
             import json
             import google.generativeai as genai  # type: ignore # noqa: F401
 
@@ -172,8 +185,11 @@ class SentimentEngine:
             model = genai.GenerativeModel("gemini-pro")
             response = model.generate_content(text=self.SYSTEM_PROMPT + "\n" + text)  # type: ignore[arg-type]
             content = response.text  # type: ignore[attr-defined]
+            metrics.record_api_call(success=True)
             return float(json.loads(content).get("score", 0.0))
         except Exception:
+            from ..utils.metrics import get_metrics
+            get_metrics().record_api_call(success=False, error="Gemini API error")
             return 0.0
 
     # ------------------------------------------------------------------

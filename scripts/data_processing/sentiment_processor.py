@@ -112,6 +112,9 @@ def _build_config_from_cli(
 @click.option("--include-images", is_flag=True, help="Include image analysis")
 @click.option("--dry-run", is_flag=True, help="Show what would be processed without executing")
 @click.option("--incremental", is_flag=True, help="Skip posts that were previously processed (uses .state directory)")
+@click.option("--metrics-file", help="Write Prometheus metrics to file after processing")
+@click.option("--health-check", is_flag=True, help="Print health status and exit")
+@click.option("--enable-alerts", is_flag=True, help="Send alerts on errors (requires SLACK_WEBHOOK_URL or SMTP config)")
 def main(
     config_path: Optional[str],
     query: Optional[str],
@@ -124,8 +127,21 @@ def main(
     include_images: bool,
     dry_run: bool,
     incremental: bool,
+    metrics_file: Optional[str],
+    health_check: bool,
+    enable_alerts: bool,
 ):
     """Main entry point - replicate webapp's analyze_reddit_sentiment/analyze_twitter_sentiment (skeleton)."""
+
+    if health_check:
+        from scripts.data_processing.utils.health_check import health_check_json
+        click.echo(health_check_json())
+        return
+
+    # Initialize metrics
+    from scripts.data_processing.utils.metrics import get_metrics, reset_metrics
+    reset_metrics()
+    metrics = get_metrics()
 
     if config_path:
         with open(config_path, "r", encoding="utf-8") as f:
@@ -177,6 +193,7 @@ def main(
 
             tracker = StateTracker()
             reddit_posts = tracker.filter_new(f"reddit_{config.query}", reddit_posts)
+        metrics.record_fetch("reddit", len(reddit_posts))
         click.echo(
             f"[SentimentProcessor] Retrieved {len(reddit_posts)} posts from Reddit"
         )
@@ -199,6 +216,7 @@ def main(
 
                 tracker = StateTracker()
                 twitter_posts = tracker.filter_new(f"twitter_{config.query}", twitter_posts)
+            metrics.record_fetch("twitter", len(twitter_posts))
             click.echo(
                 f"[SentimentProcessor] Retrieved {len(twitter_posts)} tweets from Twitter"
             )
@@ -216,6 +234,10 @@ def main(
     engine = SentimentEngine(models=config.models)
     texts = [p["content"] for p in all_posts]
     analysis_results = engine.analyze_batch(texts)
+
+    # Record analysis metrics
+    for model in config.models:
+        metrics.record_analysis(model, len(texts))
 
     # Merge results back into post dictionaries
     for post, sentiment in zip(all_posts, analysis_results):
@@ -263,6 +285,19 @@ def main(
 
     else:
         click.echo(f"[SentimentProcessor] Unknown output format: {config.output_format}", err=True)
+
+    # Finalize metrics and optionally write to file
+    metrics.finalize()
+    
+    # Send alerts if enabled and conditions are met
+    if enable_alerts:
+        from scripts.data_processing.utils.alerting import send_alerts_if_needed
+        send_alerts_if_needed()
+    
+    if metrics_file:
+        with open(metrics_file, "w", encoding="utf-8") as f:
+            f.write(metrics.to_prometheus_format())
+        click.echo(f"[SentimentProcessor] Metrics written to {metrics_file}")
 
 
 if __name__ == "__main__":
