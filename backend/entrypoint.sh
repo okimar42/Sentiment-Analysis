@@ -6,7 +6,7 @@ echo "[entrypoint.sh] Args: $@"
 # Function to wait for database
 wait_for_db() {
     echo "[entrypoint.sh] Waiting for database to be ready..."
-    until pg_isready -h db -p 5432 -U sentiment_analysis > /dev/null 2>&1; do
+    until python db_connection_check.py > /dev/null 2>&1; do
         echo "[entrypoint.sh] Database not ready, waiting 2 seconds..."
         sleep 2
     done

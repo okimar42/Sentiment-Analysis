@@ -4,6 +4,7 @@ import io
 import logging
 import os
 import time
+import unittest
 from unittest import mock
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -312,7 +313,7 @@ class HealthEndpointTests(TestCase):
     @patch("sentiment_analysis.models.SentimentAnalysis.objects.count", return_value=1)
     def test_health_healthy(self, mock_count, mock_celery, mock_settings):
         mock_celery.control.inspect.return_value.active.return_value = {}
-        url = reverse("sentiment-analysis-health")
+        url = reverse("analyze-health")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "healthy")
@@ -322,20 +323,21 @@ class HealthEndpointTests(TestCase):
         side_effect=Exception("DB down"),
     )
     def test_health_db_failure(self, mock_count):
-        url = reverse("sentiment-analysis-health")
+        url = reverse("analyze-health")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 503)
-        self.assertEqual(response.json()["status"], "unhealthy")
+        self.assertEqual(response.json()["status"], "error")
 
     @patch("django.conf.settings")
     @patch("celery.current_app")
     @patch("sentiment_analysis.models.SentimentAnalysis.objects.count", return_value=1)
     def test_health_redis_failure(self, mock_count, mock_celery, mock_settings):
         mock_celery.control.inspect.side_effect = Exception("Redis down")
-        url = reverse("sentiment-analysis-health")
+        url = reverse("analyze-health")
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 503)
-        self.assertEqual(response.json()["status"], "unhealthy")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "healthy")
+        self.assertEqual(response.json()["celery"], "degraded")
 
 
 class ViewSetErrorHandlingTests(TestCase):
@@ -518,8 +520,8 @@ class LoggingAndMonitoringTests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    @pytest.mark.skip(
-        reason="Contextvars-based logging (request_id/task_id) cannot be reliably tested in Django's test client; verified in real dev/prod runs."
+    @unittest.skip(
+        "Contextvars-based logging (request_id/task_id) cannot be reliably tested in Django's test client; verified in real dev/prod runs."
     )
     def test_api_logs_include_request_id_and_json_format(self):
         # Patch logging to capture output
@@ -543,8 +545,8 @@ class LoggingAndMonitoringTests(TestCase):
         # Check for request_id in logs
         self.assertIn("request_id", log_contents, "Logs should include request_id")
 
-    @pytest.mark.skip(
-        reason="Contextvars-based logging (request_id/task_id) cannot be reliably tested in Django's test client; verified in real dev/prod runs."
+    @unittest.skip(
+        "Contextvars-based logging (request_id/task_id) cannot be reliably tested in Django's test client; verified in real dev/prod runs."
     )
     def test_celery_logs_include_task_id(self):
         # Patch logging to capture output

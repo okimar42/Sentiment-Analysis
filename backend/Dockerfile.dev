@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     git \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip, setuptools, and wheel for faster, more reliable installs

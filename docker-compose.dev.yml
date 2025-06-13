@@ -39,8 +39,10 @@ services:
       - HF_HOME=/root/.cache/huggingface
       - USE_GPU=${USE_GPU:-true}
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     user: "0:0"
     privileged: true
     healthcheck:
@@ -111,8 +113,10 @@ services:
       - HF_HOME=/root/.cache/huggingface
       - USE_GPU=${USE_GPU:-true}
     depends_on:
-      - backend
-      - redis
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     user: "0:0"
     privileged: true
     healthcheck:
