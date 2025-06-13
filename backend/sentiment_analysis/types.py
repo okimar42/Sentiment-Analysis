@@ -51,3 +51,11 @@ _STUB_MODULES = [
 for module_name in _STUB_MODULES:
     if module_name not in sys.modules:
         sys.modules[module_name] = _Stub(module_name)
+    # Ensure parent packages exist (e.g., "django.db.models" requires "django" and "django.db")
+    if "." in module_name:
+        parent_parts = module_name.split(".")[:-1]
+        while parent_parts:
+            parent = ".".join(parent_parts)
+            if parent not in sys.modules:
+                sys.modules[parent] = _Stub(parent)
+            parent_parts.pop()
