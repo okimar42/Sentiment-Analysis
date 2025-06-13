@@ -161,10 +161,14 @@ function Results() {
 
         {analysis.twitter_grok_summary && (
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Summary
-            </Typography>
-            <Typography>{analysis.twitter_grok_summary}</Typography>
+            <Paper sx={{ p: 2, bgcolor: 'background.paper', color: 'text.primary' }}>
+              <Typography variant="h6" gutterBottom>
+                Summary
+              </Typography>
+              <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+                {analysis.twitter_grok_summary}
+              </Typography>
+            </Paper>
           </Box>
         )}
       </Paper>

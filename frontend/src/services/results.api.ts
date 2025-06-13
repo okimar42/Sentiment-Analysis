@@ -44,6 +44,18 @@ export const searchAnalysisResults = async (
 ): Promise<{ results: AnalysisResult[]; count: number }> => {
   try {
     const response = await api.get(`analyze/${id}/search/`, { params });
+
+    // Some backend endpoints may return a simple list rather than an object
+    // Expected shape: { results: AnalysisResult[], count: number }
+    // Fallback: if we receive an array, wrap it accordingly so the UI continues to work.
+    if (Array.isArray(response.data)) {
+      return {
+        results: response.data as AnalysisResult[],
+        count: (response.data as AnalysisResult[]).length,
+      };
+    }
+
+    // Otherwise assume the backend already sent the expected object shape
     return response.data;
   } catch (error) {
     console.error('Failed to search analysis results:', error);
