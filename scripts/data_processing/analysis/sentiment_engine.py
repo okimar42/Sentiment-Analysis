@@ -69,6 +69,32 @@ class SentimentEngine:
             ]:
                 entry.setdefault(key, 0.0)
 
+            # Sarcasm detection -------------------------------------------------
+            sarcasm = self._detect_sarcasm(text)
+            entry.update(
+                {
+                    "sarcasm_score": sarcasm["confidence"],
+                    "is_sarcastic": sarcasm["sarcastic"],
+                }
+            )
+
+            # IQ estimation ----------------------------------------------------
+            iq = self._estimate_iq(text)
+            entry.update(
+                {
+                    "perceived_iq": iq["iq_score"],
+                }
+            )
+
+            # Bot detection ----------------------------------------------------
+            bot = self._detect_bot(text)
+            entry.update(
+                {
+                    "bot_probability": bot["probability"],
+                    "is_bot": bot["is_bot"],
+                }
+            )
+
             results.append(entry)
 
         return results
@@ -149,3 +175,193 @@ class SentimentEngine:
             return float(json.loads(content).get("score", 0.0))
         except Exception:
             return 0.0
+
+    # ------------------------------------------------------------------
+    # Sarcasm / IQ / Bot Detection helpers
+    # ------------------------------------------------------------------
+
+    def _choose_llm(self) -> str | None:
+        """Return preferred LLM model name present in self.models or None."""
+        for candidate in ["gpt4", "gemini", "claude"]:
+            if candidate in self.models:
+                return candidate
+        return None
+
+    def _detect_sarcasm(self, text: str) -> Dict[str, Any]:
+        model = self._choose_llm()
+        if model is None:
+            return {"confidence": 0.0, "sarcastic": False}
+
+        prompt_system = (
+            "You are a sarcasm detection assistant. Analyze the text and respond with a JSON object containing: "
+            "- confidence: A number between 0 and 1 indicating confidence in the detection "
+            "- sarcastic: A boolean indicating if the text is sarcastic "
+            "- reasoning: A brief explanation of the analysis "
+            "Example response: {\"confidence\": 0.9, \"sarcastic\": true, \"reasoning\": \"The text uses obvious sarcastic markers\"}"
+        )
+
+        messages = [{"role": "system", "content": prompt_system}, {"role": "user", "content": text}]
+
+        try:
+            import json
+
+            if model == "gpt4":
+                import os
+                import openai  # type: ignore # noqa: F401
+
+                api_key = os.getenv("OPENAI_API_KEY")
+                if api_key is None:
+                    raise RuntimeError("OPENAI_API_KEY not set")
+
+                response = openai.ChatCompletion.create(
+                    model="gpt-4",
+                    messages=messages,  # type: ignore[arg-type]
+                    temperature=0.3,
+                    api_key=api_key,
+                )
+                content = response["choices"][0]["message"]["content"]
+            elif model == "gemini":
+                import google.generativeai as genai  # type: ignore # noqa: F401
+
+                genai.configure()
+                mdl = genai.GenerativeModel("gemini-pro")
+                response = mdl.generate_content(text=messages[1]["content"])  # type: ignore[arg-type]
+                content = response.text  # type: ignore[attr-defined]
+            elif model == "claude":
+                import os
+                import anthropic  # type: ignore # noqa: F401
+
+                client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+                response = client.messages.create(
+                    model="claude-3-opus-20240229",
+                    system=messages[0]["content"],
+                    messages=[{"role": "user", "content": text}],  # type: ignore[arg-type]
+                    max_tokens=256,
+                )
+                content = response.content[0].text  # type: ignore[index]
+            else:
+                return {"confidence": 0.0, "sarcastic": False}
+
+            parsed = json.loads(content)
+            return {
+                "confidence": float(parsed.get("confidence", 0.0)),
+                "sarcastic": bool(parsed.get("sarcastic", False)),
+            }
+        except Exception:
+            return {"confidence": 0.0, "sarcastic": False}
+
+    def _estimate_iq(self, text: str) -> Dict[str, Any]:
+        model = self._choose_llm()
+        if model is None:
+            return {"iq_score": 0.5}
+
+        prompt_system = (
+            "You are an IQ analysis assistant. Analyze the text and respond with a JSON object containing: "
+            "- iq_score: A number between 0 and 1 indicating the perceived intelligence "
+            "- raw_iq: A number between 55 and 145 representing the estimated IQ "
+            "- confidence: A number between 0 and 1 indicating confidence in the analysis "
+            "- reasoning: A brief explanation of the analysis "
+            "Example response: {\"iq_score\": 0.8, \"raw_iq\": 120, \"confidence\": 0.9, \"reasoning\": \"The text shows high analytical ability\"}"
+        )
+
+        messages = [{"role": "system", "content": prompt_system}, {"role": "user", "content": text}]
+
+        try:
+            import json
+
+            if model == "gpt4":
+                import os
+                import openai  # type: ignore # noqa: F401
+
+                response = openai.ChatCompletion.create(
+                    model="gpt-4",
+                    messages=messages,  # type: ignore[arg-type]
+                    temperature=0.3,
+                    api_key=os.getenv("OPENAI_API_KEY"),
+                )
+                content = response["choices"][0]["message"]["content"]
+            elif model == "gemini":
+                import google.generativeai as genai  # type: ignore # noqa: F401
+
+                genai.configure()
+                mdl = genai.GenerativeModel("gemini-pro")
+                response = mdl.generate_content(text=messages[1]["content"])  # type: ignore[arg-type]
+                content = response.text  # type: ignore[attr-defined]
+            elif model == "claude":
+                import os
+                import anthropic  # type: ignore # noqa: F401
+
+                client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+                response = client.messages.create(
+                    model="claude-3-opus-20240229",
+                    system=messages[0]["content"],
+                    messages=[{"role": "user", "content": text}],  # type: ignore[arg-type]
+                    max_tokens=256,
+                )
+                content = response.content[0].text  # type: ignore[index]
+            else:
+                return {"iq_score": 0.5}
+
+            parsed = json.loads(content)
+            return {"iq_score": float(parsed.get("iq_score", 0.5))}
+        except Exception:
+            return {"iq_score": 0.5}
+
+    def _detect_bot(self, text: str) -> Dict[str, Any]:
+        model = self._choose_llm()
+        if model is None:
+            return {"probability": 0.0, "is_bot": False}
+
+        prompt_system = (
+            "You are a bot detection assistant. Analyze the given text for bot-like behavior and respond with a JSON object containing: "
+            "- probability: A number between 0 and 1 indicating the likelihood of the text being from a bot "
+            "- is_bot: A boolean indicating if the text is likely from a bot (true if probability > 0.7) "
+            "- reasoning: A brief explanation of your analysis "
+            "Example response: {\"probability\": 0.85, \"is_bot\": true, \"reasoning\": \"Text shows repetitive patterns and lacks natural language variation\"}"
+        )
+
+        messages = [{"role": "system", "content": prompt_system}, {"role": "user", "content": text}]
+
+        try:
+            import json
+
+            if model == "gpt4":
+                import os
+                import openai  # type: ignore # noqa: F401
+
+                response = openai.ChatCompletion.create(
+                    model="gpt-4",
+                    messages=messages,  # type: ignore[arg-type]
+                    temperature=0.3,
+                    api_key=os.getenv("OPENAI_API_KEY"),
+                )
+                content = response["choices"][0]["message"]["content"]
+            elif model == "gemini":
+                import google.generativeai as genai  # type: ignore # noqa: F401
+
+                genai.configure()
+                mdl = genai.GenerativeModel("gemini-pro")
+                response = mdl.generate_content(text=messages[1]["content"])  # type: ignore[arg-type]
+                content = response.text  # type: ignore[attr-defined]
+            elif model == "claude":
+                import os
+                import anthropic  # type: ignore # noqa: F401
+
+                client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+                response = client.messages.create(
+                    model="claude-3-opus-20240229",
+                    system=messages[0]["content"],
+                    messages=[{"role": "user", "content": text}],  # type: ignore[arg-type]
+                    max_tokens=256,
+                )
+                content = response.content[0].text  # type: ignore[index]
+            else:
+                return {"probability": 0.0, "is_bot": False}
+
+            parsed = json.loads(content)
+            return {
+                "probability": float(parsed.get("probability", 0.0)),
+                "is_bot": bool(parsed.get("is_bot", False)),
+            }
+        except Exception:
+            return {"probability": 0.0, "is_bot": False}
