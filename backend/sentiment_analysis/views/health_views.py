@@ -1,18 +1,18 @@
-"""
-Health check views for system monitoring.
-"""
+"""Health check views for system monitoring."""
 
-# type: ignore
-from rest_framework import status  # type: ignore
-# type: ignore
-from rest_framework.response import Response  # type: ignore
-# type: ignore
-from rest_framework.views import APIView  # type: ignore
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_206_PARTIAL_CONTENT,
+    HTTP_503_SERVICE_UNAVAILABLE,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
+from rest_framework.response import Response
+from rest_framework.views import APIView as DRFAPIView
 
 from ..services import AnalysisService
 
 
-class HealthCheckView(APIView):
+class HealthCheckView(DRFAPIView):
     """
     Health check endpoint for system monitoring.
     """
@@ -28,16 +28,16 @@ class HealthCheckView(APIView):
             health_status = AnalysisService.get_health_status()
 
             # Determine HTTP status based on health
-            http_status = status.HTTP_200_OK
+            http_status = HTTP_200_OK
             if health_status.get("status") == "error":
-                http_status = status.HTTP_503_SERVICE_UNAVAILABLE
+                http_status = HTTP_503_SERVICE_UNAVAILABLE
             elif health_status.get("celery") == "error":
-                http_status = status.HTTP_206_PARTIAL_CONTENT
+                http_status = HTTP_206_PARTIAL_CONTENT
 
             return Response(health_status, status=http_status)
 
         except Exception as e:
             return Response(
                 {"status": "error", "error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=HTTP_500_INTERNAL_SERVER_ERROR,
             )
