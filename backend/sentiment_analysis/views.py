@@ -454,16 +454,33 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
             results = results.order_by(sort_field)
         else:
             results = results.order_by(f"-{sort_field}")
-        # Return all results for the analysis, no pagination (for debugging)
-        raw_ids = list(results.values_list("id", flat=True))
-        serializer = SentimentResultSerializer(results, many=True)
+        # Pagination
+        try:
+            page = int(request.query_params.get("page", 1))
+        except ValueError:
+            page = 1
+        try:
+            page_size = int(request.query_params.get("page_size", 20))
+        except ValueError:
+            page_size = 20
+        if page_size <= 0:
+            page_size = 20
+
+        total_count = results.count()
+        total_pages = (total_count + page_size - 1) // page_size if page_size else 1
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated_results = results[start:end]
+
+        raw_ids = list(paginated_results.values_list("id", flat=True))
+        serializer = SentimentResultSerializer(paginated_results, many=True)
         return Response(
             {
                 "results": serializer.data,
-                "total_count": results.count(),
-                "page": 1,
-                "page_size": results.count(),
-                "total_pages": 1,
+                "total_count": total_count,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
                 "raw_ids": raw_ids,
             }
         )
@@ -560,6 +577,36 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
                 ),
             }
         )
+
+    @action(detail=True, methods=["get"], url_path="results-stream")
+    def results_stream(self, request, pk=None):
+        """Server-Sent Events stream that pushes newly created results in real-time."""
+        from django.utils import timezone
+        import json, time
+
+        analysis = get_object_or_404(SentimentAnalysis, pk=pk)
+        from .models import SentimentResult
+
+        def event_stream():
+            last_id = None
+            while True:
+                qset = (
+                    SentimentResult.objects.filter(sentiment_analysis=analysis, is_ad=False)
+                    .order_by("id")
+                )
+                if last_id is not None:
+                    qset = qset.filter(id__gt=last_id)
+                for r in qset:
+                    last_id = r.id
+                    data = SentimentResultSerializer(r).data
+                    yield f"data: {json.dumps(data)}\n\n"
+                # Heartbeat to keep connection alive every 15 seconds
+                yield f"event: ping\ndata: {timezone.now().isoformat()}\n\n"
+                time.sleep(15)
+
+        response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+        response["Cache-Control"] = "no-cache"
+        return response
 
 
 class UserRegistrationView(APIView):

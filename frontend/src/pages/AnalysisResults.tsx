@@ -34,6 +34,8 @@ import type { Analysis, AnalysisSummary, AnalysisResult, SearchParams } from '..
 import { debounce } from 'lodash';
 import RedditIcon from '@mui/icons-material/Reddit';
 import TwitterIcon from '@mui/icons-material/Twitter';
+import SentimentOverTimeAreaChart from '../components/charts/SentimentOverTimeAreaChart';
+import useResultsStream from '../hooks/useResultsStream';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
@@ -93,6 +95,25 @@ const AnalysisResults = () => {
   // Loading indicator for search/filter queries
   const [searchLoading, setSearchLoading] = useState(false);
 
+  // Results stream subscription
+  useResultsStream({
+    analysisId: id,
+    onMessage: (newResult) => {
+      // prepend new result and update counts
+      setSearchResults(prev => ({
+        ...prev,
+        results: [newResult, ...prev.results],
+        count: prev.count + 1,
+      }));
+      // Update analysis.results for chart
+      setAnalysis(prev => {
+        if (!prev) return prev;
+        const updatedResults = prev.results ? [newResult, ...prev.results] : [newResult];
+        return { ...prev, results: updatedResults };
+      });
+    },
+  });
+
   // Use inline debounce to avoid dependency warning
   const debouncedSearch = debounce(async (params: SearchParams) => {
     if (!id) return;
@@ -142,17 +163,17 @@ const AnalysisResults = () => {
       const data: any = await getAnalysisFullDetails(id as string);
       setDebugFull(JSON.stringify(data));
       setDebugStatus(data.status || 'N/A');
-      setAnalysis(data);
+      setAnalysis(data.analysis);
       setSummary(data.summary);
       if (data.results) {
-        setAnalysis((prev) => prev ? { ...prev, results: data.results } : null);
+        setAnalysis((prev) => prev ? { ...prev, results: data.results } : { ...data.analysis, results: data.results });
         if (Array.isArray(data.results) && data.results.length > 0) {
           setLoading(false);
         }
       }
-      const newProcessingState = data.status === 'processing';
+      const newProcessingState = data.analysis?.status === 'processing';
       setIsProcessing(newProcessingState);
-      if (data.status === 'completed' || data.status === 'failed') {
+      if (data.analysis?.status === 'completed' || data.analysis?.status === 'failed') {
         setLoading(false);
       }
     } catch (err: unknown) {
@@ -339,6 +360,19 @@ const AnalysisResults = () => {
           </Paper>
         </Grid>
 
+        {/* Sentiment Over Time (Stacked Area) */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Sentiment Over Time
+            </Typography>
+            {/* Use stacked area chart component */}
+            {analysis.results && analysis.results.length > 0 && (
+              <SentimentOverTimeAreaChart results={analysis.results} />
+            )}
+          </Paper>
+        </Grid>
+
         {/* Search and Filters */}
         <Grid item xs={12}>
           <Paper sx={{ p: 2 }}>
@@ -413,6 +447,22 @@ const AnalysisResults = () => {
                 />
               </Grid>
 
+              {/* Page Size */}
+              <Grid item xs={12} md={2}>
+                <FormControl fullWidth>
+                  <InputLabel>Page Size</InputLabel>
+                  <Select
+                    value={String(searchResults.page_size)}
+                    onChange={(e) => setSearchResults(prev => ({ ...prev, page_size: Number(e.target.value) }))}
+                    label="Page Size"
+                  >
+                    {[10, 20, 50, 100].map((size) => (
+                      <MenuItem key={size} value={size}>{size}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
               {/* Sort Controls */}
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth>
@@ -423,7 +473,7 @@ const AnalysisResults = () => {
                     label="Sort By"
                   >
                     <MenuItem value="date">Date</MenuItem>
-                    <MenuItem value="sentiment">Sentiment</MenuItem>
+                    <MenuItem value="score">Sentiment</MenuItem>
                     <MenuItem value="iq">IQ</MenuItem>
                   </Select>
                 </FormControl>
