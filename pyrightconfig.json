@@ -1,8 +1,5 @@
 {
   "include": ["backend/sentiment_analysis"],
-  "stubPath": [
-    ".venv/lib/python3.11/site-packages"
-  ],
-  "typeCheckingMode": "strict",
-  "reportMissingTypeStubs": false
+  "stubPath": [".venv/lib/python3.11/site-packages"],
+  "typeCheckingMode": "strict"
 }
