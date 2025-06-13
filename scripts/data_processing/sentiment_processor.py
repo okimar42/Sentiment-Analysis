@@ -111,6 +111,7 @@ def _build_config_from_cli(
 @click.option("--output-path", default="./results", help="Output directory/file path")
 @click.option("--include-images", is_flag=True, help="Include image analysis")
 @click.option("--dry-run", is_flag=True, help="Show what would be processed without executing")
+@click.option("--incremental", is_flag=True, help="Skip posts that were previously processed (uses .state directory)")
 def main(
     config_path: Optional[str],
     query: Optional[str],
@@ -122,6 +123,7 @@ def main(
     output_path: str,
     include_images: bool,
     dry_run: bool,
+    incremental: bool,
 ):
     """Main entry point - replicate webapp's analyze_reddit_sentiment/analyze_twitter_sentiment (skeleton)."""
 
@@ -170,6 +172,11 @@ def main(
             end_date=config.end_date,
         )
         reddit_posts = rp.fetch_posts(config.query)
+        if incremental:
+            from scripts.data_processing.utils.state_tracker import StateTracker
+
+            tracker = StateTracker()
+            reddit_posts = tracker.filter_new(f"reddit_{config.query}", reddit_posts)
         click.echo(
             f"[SentimentProcessor] Retrieved {len(reddit_posts)} posts from Reddit"
         )
@@ -187,6 +194,11 @@ def main(
                 end_date=config.end_date,
             )
             twitter_posts = tp.fetch_posts(config.query)
+            if incremental:
+                from scripts.data_processing.utils.state_tracker import StateTracker
+
+                tracker = StateTracker()
+                twitter_posts = tracker.filter_new(f"twitter_{config.query}", twitter_posts)
             click.echo(
                 f"[SentimentProcessor] Retrieved {len(twitter_posts)} tweets from Twitter"
             )
