@@ -1,7 +1,7 @@
-from django.urls import reverse
-from rest_framework.test import APITestCase
+from django.urls import reverse  # type: ignore
+from rest_framework.test import APITestCase  # type: ignore
 from sentiment_analysis.models import SentimentAnalysis, SentimentResult
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User  # type: ignore
 
 
 class SearchResultsEndpointTests(APITestCase):

@@ -69,10 +69,23 @@ export type SentimentByDate = {
 
 // Search parameters
 export interface SearchParams {
-  search?: string;
-  ordering?: string;
-  sentiment?: string;
-  [key: string]: unknown;
+  q?: string;
+  sentiment?: 'positive' | 'neutral' | 'negative' | 'all';
+  sarcasm?: 'true' | 'false';
+  bot?: 'true' | 'false';
+  min_iq?: number;
+  page?: number;
+  page_size?: number;
+  sort_by?: 'date' | 'sentiment' | 'iq';
+  sort_order?: 'asc' | 'desc';
+}
+
+export interface SearchResultsResponse {
+  results: AnalysisResult[];
+  count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
 // Cache types

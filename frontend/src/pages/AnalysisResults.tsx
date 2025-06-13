@@ -95,16 +95,18 @@ const AnalysisResults = () => {
   const debouncedSearch = debounce(async (params: SearchParams) => {
     if (!id) return;
     try {
-      const results = await searchAnalysisResults(id, params);
-      console.log('API response from searchAnalysisResults:', results);
-      if (!results || !results.results) {
+      const res = await searchAnalysisResults(id, params);
+      console.log('API response from searchAnalysisResults:', res);
+      if (!res || !res.results) {
         return;
       }
       setSearchResults(prev => ({
         ...prev,
-        results: results.results,
-        count: results.count,
-        total_pages: Math.ceil(results.count / prev.page_size),
+        results: res.results,
+        count: res.count,
+        page: res.page,
+        page_size: res.page_size,
+        total_pages: res.total_pages,
       }));
     } catch (error: unknown) {
       console.error('Search error:', error);
@@ -162,14 +164,6 @@ const AnalysisResults = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData, id]);
-
-  // Only search when searchParams changes
-  // The dependency array is intentionally limited to avoid excessive searches
-  useEffect(() => {
-    if (id) {
-      debouncedSearch(searchResults);
-    }
-  }, [searchResults, id]);
 
   // Polling effect
   useEffect(() => {

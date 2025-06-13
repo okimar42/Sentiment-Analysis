@@ -1,6 +1,6 @@
 import api from './api.client';
 import { getCachedData, setCachedData } from './cache';
-import type { AnalysisResult, SearchParams } from './types';
+import type { AnalysisResult, SearchParams, SearchResultsResponse } from './types';
 
 export const getAnalysisResults = async (id: string): Promise<AnalysisResult[]> => {
   const cacheKey = `analysis-results-${id}`;
@@ -39,9 +39,9 @@ export const updateSentiment = async (
 };
 
 export const searchAnalysisResults = async (
-  id: string, 
+  id: string,
   params: SearchParams
-): Promise<{ results: AnalysisResult[]; count: number }> => {
+): Promise<SearchResultsResponse> => {
   try {
     const response = await api.get(`analyze/${id}/search/`, { params });
     return response.data;
