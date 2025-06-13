@@ -5,7 +5,9 @@ Test data creation utilities using context7 for comprehensive testing.
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
+# type: ignore
 from django.contrib.auth.models import User
+# type: ignore
 from django.db import transaction
 
 from ...models import SentimentAnalysis, SentimentResult

@@ -31,7 +31,7 @@ import {
 import { getAnalysisFullDetails } from '../services/analysis.api';
 import { searchAnalysisResults } from '../services/results.api';
 import type { Analysis, AnalysisSummary, AnalysisResult, SearchParams } from '../services/types';
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce';
 import RedditIcon from '@mui/icons-material/Reddit';
 import TwitterIcon from '@mui/icons-material/Twitter';
 

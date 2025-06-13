@@ -8,6 +8,7 @@ import factory
 import pytz
 from factory.django import DjangoModelFactory
 
+# type: ignore
 from django.contrib.auth.models import User
 
 from ...models import SentimentAnalysis, SentimentResult

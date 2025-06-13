@@ -16,6 +16,7 @@ Using context7 for comprehensive test coverage and quality assurance.
 import os
 
 import django
+# type: ignore
 from django.conf import settings
 
 # Configure Django for testing
