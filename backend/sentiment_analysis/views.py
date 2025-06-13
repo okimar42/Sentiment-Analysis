@@ -2,6 +2,11 @@ import asyncio
 import logging
 from typing import Any, Dict, Optional
 
+# Register local runtime stubs for 3rd-party packages lacking type hints
+# This must be imported before other project modules so that static type
+# checkers (mypy, pylance) and runtime have the patched modules available.
+from . import types as _types  # type: ignore  # noqa: F401, E402
+
 import aiohttp  # type: ignore
 from drf_spectacular.openapi import AutoSchema  # type: ignore
 from rest_framework import status, viewsets
