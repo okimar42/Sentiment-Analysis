@@ -8,17 +8,16 @@ import factory
 import pytz
 from factory.django import DjangoModelFactory
 
-# type: ignore
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User as DjangoUser
 
 from ...models import SentimentAnalysis, SentimentResult
 
 
-class UserFactory(DjangoModelFactory):
+class UserFactory(DjangoModelFactory[DjangoUser]):
     """Factory for creating test users."""
 
     class Meta:
-        model = User
+        model = DjangoUser
 
     username = factory.Sequence(lambda n: f"testuser{n}")
     email = factory.LazyAttribute(lambda obj: f"{obj.username}@example.com")
