@@ -214,27 +214,43 @@ def main(
     if output_dir.is_dir() is False:
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_file = output_dir / (
-        f"sentiment_{config.query.replace(',', '_')}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.json"
-    )
+    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
 
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(
-            {
-                "analysis_summary": {
-                    "processed_at": datetime.utcnow().isoformat(),
-                    "total_posts": len(all_posts),
-                    "models_used": config.models,
-                    "sources": config.sources,
+    if config.output_format == "json":
+        output_file = output_dir / f"sentiment_{config.query.replace(',', '_')}_{timestamp}.json"
+        with open(output_file, "w", encoding="utf-8") as f:
+            json.dump(
+                {
+                    "analysis_summary": {
+                        "processed_at": datetime.utcnow().isoformat(),
+                        "total_posts": len(all_posts),
+                        "models_used": config.models,
+                        "sources": config.sources,
+                    },
+                    "results": all_posts,
                 },
-                "results": all_posts,
-            },
-            f,
-            default=str,
-            indent=2,
-        )
+                f,
+                default=str,
+                indent=2,
+            )
+        click.echo(f"[SentimentProcessor] JSON saved to {output_file}")
 
-    click.echo(f"[SentimentProcessor] Analysis complete. Output saved to {output_file}")
+    elif config.output_format == "csv":
+        from scripts.data_processing.output.csv_writer import save_analysis_csv
+
+        output_file = output_dir / f"sentiment_{config.query.replace(',', '_')}_{timestamp}.csv"
+        save_analysis_csv(all_posts, output_file)
+        click.echo(f"[SentimentProcessor] CSV saved to {output_file}")
+
+    elif config.output_format == "sqlite":
+        from scripts.data_processing.output.sqlite_writer import save_analysis_sqlite
+
+        output_file = output_dir / f"sentiment_{config.query.replace(',', '_')}_{timestamp}.db"
+        save_analysis_sqlite(all_posts, output_file)
+        click.echo(f"[SentimentProcessor] SQLite DB saved to {output_file}")
+
+    else:
+        click.echo(f"[SentimentProcessor] Unknown output format: {config.output_format}", err=True)
 
 
 if __name__ == "__main__":
