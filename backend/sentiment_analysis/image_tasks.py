@@ -15,6 +15,7 @@ import tweepy  # type: ignore[import]
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer  # type: ignore[import]
+import requests  # type: ignore[import]
 
 from django.conf import settings
 from django.core.cache import cache
@@ -1269,8 +1270,6 @@ else:
     async def analyze_image(image_url: str, selected_llms: list) -> Dict[str, Any]:
         client = None
         try:
-            import requests  # type: ignore[import]
-
             response = requests.get(image_url)
             if response.status_code != 200:
                 raise ValueError(f"Failed to download image: {response.status_code}")

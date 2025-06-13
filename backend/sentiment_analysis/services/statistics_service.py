@@ -180,13 +180,12 @@ class StatisticsService:
                         "id": result.id,
                         "content": result.content,
                         "score": result.final_score,
-                        "post_date": result.post_date.isoformat()
-                        if result.post_date
-                        else None,
+                        "post_date": result.post_date.isoformat() if result.post_date else None,
                         "perceived_iq": result.perceived_iq,
                         "bot_probability": result.bot_probability,
                         "source_type": result.source_type,
                         "post_id": result.post_id,
+                        "grok_score": getattr(result, "grok_score", 0.0),
                     }
                     for result in results[:100]  # Limit to first 100 for performance
                 ],

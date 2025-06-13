@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+
 vi.mock('axios', () => {
   const mockAxios = {
     post: vi.fn(),
@@ -14,8 +15,12 @@ vi.mock('axios', () => {
     default: mockAxios,
   };
 });
+
 import axios from 'axios';
-import * as api from './api';
+import * as api from './auth.api';
+
+// Type the mocked axios
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('api error handling', () => {
   afterEach(() => {
@@ -24,32 +29,32 @@ describe('api error handling', () => {
 
   it('handles 401 error', async () => {
     const error = { response: { status: 401 }, request: {}, message: '401' };
-    axios.post.mockRejectedValueOnce(error);
+    mockedAxios.post.mockRejectedValueOnce(error);
     const promise = api.login('user', 'pass').catch(e => e);
     await expect(promise).resolves.toBeInstanceOf(Error);
   });
 
   it('handles 403 error', async () => {
     const error = { response: { status: 403 }, request: {}, message: '403' };
-    axios.post.mockRejectedValueOnce(error);
+    mockedAxios.post.mockRejectedValueOnce(error);
     await expect(api.login('user', 'pass')).rejects.toThrow();
   });
 
   it('handles 404 error', async () => {
     const error = { response: { status: 404 }, request: {}, message: '404' };
-    axios.post.mockRejectedValueOnce(error);
+    mockedAxios.post.mockRejectedValueOnce(error);
     await expect(api.login('user', 'pass')).rejects.toThrow();
   });
 
   it('handles 500 error', async () => {
     const error = { response: { status: 500 }, request: {}, message: '500' };
-    axios.post.mockRejectedValueOnce(error);
+    mockedAxios.post.mockRejectedValueOnce(error);
     await expect(api.login('user', 'pass')).rejects.toThrow();
   });
 
   it('handles network error', async () => {
     const error = { request: {}, message: 'Network Error' };
-    axios.post.mockRejectedValueOnce(error);
+    mockedAxios.post.mockRejectedValueOnce(error);
     await expect(api.login('user', 'pass')).rejects.toThrow();
   });
 }); 
