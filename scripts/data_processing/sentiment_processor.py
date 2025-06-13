@@ -175,7 +175,27 @@ def main(
         )
         all_posts.extend(reddit_posts)
 
-    # TODO: Add TwitterProcessor integration.
+    if "twitter" in [s.lower() for s in config.sources]:
+        try:
+            from scripts.data_processing.sources.twitter_processor import (
+                TwitterProcessor,
+            )
+
+            tp = TwitterProcessor(
+                max_posts=config.max_posts,
+                start_date=config.start_date,
+                end_date=config.end_date,
+            )
+            twitter_posts = tp.fetch_posts(config.query)
+            click.echo(
+                f"[SentimentProcessor] Retrieved {len(twitter_posts)} tweets from Twitter"
+            )
+            all_posts.extend(twitter_posts)
+        except Exception as exc:
+            click.echo(
+                f"[SentimentProcessor] Error fetching tweets: {exc}",
+                err=True,
+            )
 
     if not all_posts:
         click.echo("[SentimentProcessor] No posts retrieved. Exiting.")

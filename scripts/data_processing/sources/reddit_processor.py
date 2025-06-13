@@ -7,7 +7,7 @@ import os
 
 import praw  # type: ignore
 
-from .base_processor import BaseProcessor
+from scripts.data_processing.sources.base_processor import BaseProcessor
 
 
 class RedditProcessor(BaseProcessor):
