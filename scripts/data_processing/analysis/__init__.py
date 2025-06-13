@@ -1,0 +1,1 @@
+"""Analysis subpackage (sentiment engines, image analysis, batch processing)."""
