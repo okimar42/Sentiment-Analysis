@@ -7,7 +7,7 @@ import os
 
 import tweepy  # type: ignore
 
-from scripts.data_processing.sources.base_processor import BaseProcessor  # type: ignore
+from scripts.data_processing.sources.base_processor import BaseProcessor
 
 
 class TwitterProcessor(BaseProcessor):
@@ -103,4 +103,4 @@ class TwitterProcessor(BaseProcessor):
             if len(all_results) >= self.max_posts:
                 break
 
-        return all_results[: self.max_posts]
+        return all_results

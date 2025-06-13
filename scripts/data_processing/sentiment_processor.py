@@ -235,15 +235,17 @@ def main(
     texts = [p["content"] for p in all_posts]
     analysis_results = engine.analyze_batch(texts)
 
-    # Record analysis metrics
+    # Record that we analyzed this many posts
+    metrics.posts_analyzed = len(texts)
+    # Record model usage
     for model in config.models:
-        metrics.record_analysis(model, len(texts))
+        metrics.model_counts[model] = metrics.model_counts.get(model, 0) + len(texts)
 
     # Merge results back into post dictionaries
     for post, sentiment in zip(all_posts, analysis_results):
         post.update(sentiment)
 
-    # Write output (JSON only for initial version)
+    # Write output in requested format
     output_dir = Path(config.output_path)
     if output_dir.is_dir() is False:
         output_dir.mkdir(parents=True, exist_ok=True)

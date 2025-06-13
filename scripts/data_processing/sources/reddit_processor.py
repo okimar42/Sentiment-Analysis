@@ -97,7 +97,7 @@ class RedditProcessor(BaseProcessor):
                     }
                 )
 
-            if len(all_results) >= self.max_posts:
-                break  # Global limit reached.
+                if len(all_results) >= self.max_posts:
+                    break  # Global limit reached
 
-        return all_results[: self.max_posts]
+        return all_results

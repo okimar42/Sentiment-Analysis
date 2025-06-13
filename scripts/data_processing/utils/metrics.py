@@ -69,12 +69,22 @@ class ProcessingMetrics:
         ]
         
         # Source-specific metrics
+        if self.source_counts:
+            lines.extend([
+                "# HELP sentiment_processor_posts_by_source Posts fetched by source",
+                "# TYPE sentiment_processor_posts_by_source gauge",
+            ])
         for source, count in self.source_counts.items():
             lines.extend([
                 f"sentiment_processor_posts_by_source{{source=\"{source}\"}} {count}",
             ])
         
         # Model-specific metrics  
+        if self.model_counts:
+            lines.extend([
+                "# HELP sentiment_processor_analyses_by_model Analyses by model",
+                "# TYPE sentiment_processor_analyses_by_model gauge",
+            ])
         for model, count in self.model_counts.items():
             lines.extend([
                 f"sentiment_processor_analyses_by_model{{model=\"{model}\"}} {count}",

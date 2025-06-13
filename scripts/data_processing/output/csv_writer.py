@@ -39,10 +39,10 @@ def save_analysis_csv(results: List[Dict[str, Any]], filepath: str | Path) -> No
                 [
                     idx,
                     item.get("content", ""),
-                    item.get("score")
-                    or item.get("compound_score")
-                    or item.get("vader_score"),
-                    item.get("post_date"),
+                    item.get("score") if item.get("score") is not None 
+                    else item.get("compound_score") if item.get("compound_score") is not None
+                    else item.get("vader_score", ""),
+                    item.get("post_date", "").isoformat() if hasattr(item.get("post_date"), "isoformat") else item.get("post_date", ""),
                     item.get("perceived_iq", ""),
                     item.get("bot_probability", ""),
                     item.get("source_type", ""),

@@ -229,13 +229,23 @@ class SentimentEngine:
                 if api_key is None:
                     raise RuntimeError("OPENAI_API_KEY not set")
 
-                response = openai.ChatCompletion.create(
-                    model="gpt-4",
-                    messages=messages,  # type: ignore[arg-type]
-                    temperature=0.3,
-                    api_key=api_key,
-                )
-                content = response["choices"][0]["message"]["content"]
+                try:
+                    client = openai.OpenAI(api_key=api_key)  # type: ignore[attr-defined]
+                    response = client.chat.completions.create(
+                        model="gpt-4",
+                        messages=messages,  # type: ignore[arg-type]
+                        temperature=0.3,
+                    )
+                    content = response.choices[0].message.content  # type: ignore[index]
+                except AttributeError:
+                    # Fallback for older openai versions
+                    response = openai.ChatCompletion.create(
+                        model="gpt-4",
+                        messages=messages,  # type: ignore[arg-type]
+                        temperature=0.3,
+                        api_key=api_key,
+                    )
+                    content = response["choices"][0]["message"]["content"]
             elif model == "gemini":
                 import google.generativeai as genai  # type: ignore # noqa: F401
 
@@ -259,11 +269,15 @@ class SentimentEngine:
                 return {"confidence": 0.0, "sarcastic": False}
 
             parsed = json.loads(content)
+            from ..utils.metrics import get_metrics
+            get_metrics().record_api_call(success=True)
             return {
                 "confidence": float(parsed.get("confidence", 0.0)),
                 "sarcastic": bool(parsed.get("sarcastic", False)),
             }
         except Exception:
+            from ..utils.metrics import get_metrics
+            get_metrics().record_api_call(success=False, error="Sarcasm detection API error")
             return {"confidence": 0.0, "sarcastic": False}
 
     def _estimate_iq(self, text: str) -> Dict[str, Any]:
@@ -289,13 +303,23 @@ class SentimentEngine:
                 import os
                 import openai  # type: ignore # noqa: F401
 
-                response = openai.ChatCompletion.create(
-                    model="gpt-4",
-                    messages=messages,  # type: ignore[arg-type]
-                    temperature=0.3,
-                    api_key=os.getenv("OPENAI_API_KEY"),
-                )
-                content = response["choices"][0]["message"]["content"]
+                api_key = os.getenv("OPENAI_API_KEY")
+                try:
+                    client = openai.OpenAI(api_key=api_key)  # type: ignore[attr-defined]
+                    response = client.chat.completions.create(
+                        model="gpt-4",
+                        messages=messages,  # type: ignore[arg-type]
+                        temperature=0.3,
+                    )
+                    content = response.choices[0].message.content  # type: ignore[index]
+                except AttributeError:
+                    response = openai.ChatCompletion.create(
+                        model="gpt-4",
+                        messages=messages,  # type: ignore[arg-type]
+                        temperature=0.3,
+                        api_key=api_key,
+                    )
+                    content = response["choices"][0]["message"]["content"]
             elif model == "gemini":
                 import google.generativeai as genai  # type: ignore # noqa: F401
 
@@ -319,8 +343,12 @@ class SentimentEngine:
                 return {"iq_score": 0.5}
 
             parsed = json.loads(content)
+            from ..utils.metrics import get_metrics
+            get_metrics().record_api_call(success=True)
             return {"iq_score": float(parsed.get("iq_score", 0.5))}
         except Exception:
+            from ..utils.metrics import get_metrics
+            get_metrics().record_api_call(success=False, error="IQ estimation API error")
             return {"iq_score": 0.5}
 
     def _detect_bot(self, text: str) -> Dict[str, Any]:
@@ -345,13 +373,23 @@ class SentimentEngine:
                 import os
                 import openai  # type: ignore # noqa: F401
 
-                response = openai.ChatCompletion.create(
-                    model="gpt-4",
-                    messages=messages,  # type: ignore[arg-type]
-                    temperature=0.3,
-                    api_key=os.getenv("OPENAI_API_KEY"),
-                )
-                content = response["choices"][0]["message"]["content"]
+                api_key = os.getenv("OPENAI_API_KEY")
+                try:
+                    client = openai.OpenAI(api_key=api_key)  # type: ignore[attr-defined]
+                    response = client.chat.completions.create(
+                        model="gpt-4",
+                        messages=messages,  # type: ignore[arg-type]
+                        temperature=0.3,
+                    )
+                    content = response.choices[0].message.content  # type: ignore[index]
+                except AttributeError:
+                    response = openai.ChatCompletion.create(
+                        model="gpt-4",
+                        messages=messages,  # type: ignore[arg-type]
+                        temperature=0.3,
+                        api_key=api_key,
+                    )
+                    content = response["choices"][0]["message"]["content"]
             elif model == "gemini":
                 import google.generativeai as genai  # type: ignore # noqa: F401
 
@@ -375,9 +413,13 @@ class SentimentEngine:
                 return {"probability": 0.0, "is_bot": False}
 
             parsed = json.loads(content)
+            from ..utils.metrics import get_metrics
+            get_metrics().record_api_call(success=True)
             return {
                 "probability": float(parsed.get("probability", 0.0)),
                 "is_bot": bool(parsed.get("is_bot", False)),
             }
         except Exception:
+            from ..utils.metrics import get_metrics
+            get_metrics().record_api_call(success=False, error="Bot detection API error")
             return {"probability": 0.0, "is_bot": False}
