@@ -6,14 +6,10 @@ import logging
 import traceback
 from typing import Optional
 
-# type: ignore
-from rest_framework import status, viewsets  # type: ignore
-# type: ignore
-from rest_framework.decorators import action  # type: ignore
-# type: ignore
-from rest_framework.request import Request  # type: ignore
-# type: ignore
-from rest_framework.response import Response  # type: ignore
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.request import Request
+from rest_framework.response import Response
 
 from django.conf import settings
 
