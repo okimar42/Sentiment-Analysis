@@ -261,7 +261,7 @@ const AnalysisResults = () => {
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 3 }}>
         <Paper sx={{ p: 2, flex: 1, bgcolor: 'background.paper', color: 'text.primary' }}>
           <Typography variant="h6">Summary</Typography>
-          <Typography variant="body1">
+          <Typography variant="body1" color="text.primary">
             {generateSummaryText(summary, analysis)}
           </Typography>
         </Paper>

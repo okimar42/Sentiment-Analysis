@@ -290,5 +290,108 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="search")
     def search_results(self, request: Request, pk: Optional[int] = None) -> Response:
-        """Search analysis results - alias for results action."""
-        return self.results(request, pk)
+        """Search and filter analysis results with pagination.
+
+        Query parameters (all optional):
+        - q: text search (case-insensitive substring match against content)
+        - sentiment: positive | neutral | negative | all (default: all)
+        - sarcasm: true | false (filter by is_sarcastic)
+        - bot: true | false (filter by is_bot)
+        - min_iq: float (minimum perceived_iq threshold)
+        - page: int (1-indexed, default 1)
+        - page_size: int (default 20, max 100)
+        - sort_by: date | sentiment | iq (default date)
+        - sort_order: asc | desc (default desc)
+        """
+        try:
+            if pk is None:
+                return Response({"error": "Missing analysis ID"}, status=400)
+
+            analysis = SentimentAnalysis.objects.get(id=pk)
+            queryset = SentimentResult.objects.filter(sentiment_analysis=analysis)
+
+            # --- Filtering ---
+            q = request.query_params.get("q")
+            if q:
+                queryset = queryset.filter(content__icontains=q)
+
+            sentiment = request.query_params.get("sentiment", "all").lower()
+            if sentiment in {"positive", "neutral", "negative"}:
+                # Use score field as approximation. Threshold 0.05 for neutrality.
+                if sentiment == "positive":
+                    queryset = queryset.filter(score__gt=0.05)
+                elif sentiment == "negative":
+                    queryset = queryset.filter(score__lt=-0.05)
+                else:  # neutral
+                    queryset = queryset.filter(score__gte=-0.05, score__lte=0.05)
+
+            sarcasm = request.query_params.get("sarcasm")
+            if sarcasm in {"true", "false"}:
+                queryset = queryset.filter(is_sarcastic=(sarcasm == "true"))
+
+            bot = request.query_params.get("bot")
+            if bot in {"true", "false"}:
+                queryset = queryset.filter(is_bot=(bot == "true"))
+
+            min_iq = request.query_params.get("min_iq")
+            if min_iq is not None:
+                try:
+                    min_iq_val = float(min_iq)
+                    queryset = queryset.filter(perceived_iq__gte=min_iq_val)
+                except ValueError:
+                    pass  # Ignore invalid value
+
+            # --- Sorting ---
+            sort_by_map = {
+                "date": "post_date",
+                "sentiment": "score",
+                "iq": "perceived_iq",
+            }
+            sort_by = request.query_params.get("sort_by", "date").lower()
+            sort_field = sort_by_map.get(sort_by, "post_date")
+
+            sort_order = request.query_params.get("sort_order", "desc").lower()
+            if sort_order == "asc":
+                queryset = queryset.order_by(sort_field)
+            else:
+                queryset = queryset.order_by(f"-{sort_field}")
+
+            # --- Pagination ---
+            try:
+                page = int(request.query_params.get("page", 1))
+            except ValueError:
+                page = 1
+
+            try:
+                page_size = int(request.query_params.get("page_size", 20))
+            except ValueError:
+                page_size = 20
+
+            page_size = max(1, min(page_size, 100))
+            total_count = queryset.count()
+
+            # Calculate slice indices (page is 1-indexed)
+            start = (page - 1) * page_size
+            end = start + page_size
+            paginated_queryset = queryset[start:end]
+
+            serializer = SentimentResultSerializer(paginated_queryset, many=True)
+            total_pages = (total_count + page_size - 1) // page_size if page_size else 1
+
+            response_data = {
+                "results": serializer.data,
+                "count": total_count,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+            }
+
+            return Response(response_data)
+
+        except SentimentAnalysis.DoesNotExist:
+            return Response({"error": "Analysis not found"}, status=404)
+        except Exception as e:
+            logger.error(f"Error in search_results: {e}", exc_info=True)
+            if settings.DEBUG:
+                return Response({"error": str(e)}, status=500)
+            return Response({"error": "Internal server error"}, status=500)
