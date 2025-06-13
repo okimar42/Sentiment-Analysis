@@ -1,20 +1,20 @@
 import asyncio
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-import aiohttp
-from drf_spectacular.openapi import AutoSchema
+import aiohttp  # type: ignore
+from drf_spectacular.openapi import AutoSchema  # type: ignore
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django.conf import settings
-from django.db import models
-from django.http import Http404, StreamingHttpResponse
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
+from django.conf import settings  # type: ignore
+from django.db import models  # type: ignore
+from django.http import Http404, StreamingHttpResponse  # type: ignore
+from django.shortcuts import get_object_or_404  # type: ignore
+from django.utils import timezone  # type: ignore
 
 from .models import SentimentAnalysis, SentimentResult
 from .serializers import (
@@ -97,7 +97,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
         """Health check endpoint."""
         try:
             SentimentAnalysis.objects.count()
-            from celery import current_app
+            from celery import current_app  # type: ignore
 
             current_app.control.inspect().active()
             return Response(
@@ -143,7 +143,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
                 analyze_twitter_sentiment.delay(analysis.id)
 
     @action(detail=True, methods=["get"])
-    def results(self, request: Any, pk: int = None) -> Response:
+    def results(self, request: Any, pk: Optional[int] = None) -> Response:
         """Get all results for a specific sentiment analysis."""
         analysis = get_object_or_404(SentimentAnalysis, pk=pk)
         if analysis.status != "completed":
@@ -168,7 +168,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
-    def summary(self, request: Any, pk: int = None) -> Response:
+    def summary(self, request: Any, pk: Optional[int] = None) -> Response:
         """Get summary statistics for a sentiment analysis."""
         analysis = get_object_or_404(SentimentAnalysis, pk=pk)
         results = (
