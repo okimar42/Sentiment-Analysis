@@ -29,6 +29,5 @@ celery-types
 types-requests
 django-stubs
 djangorestframework-stubs
-pytz-stubs
-factory-boy-stubs
+types-pytz
 types-factory-boy 

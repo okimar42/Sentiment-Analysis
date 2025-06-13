@@ -2,12 +2,9 @@
 Authentication views for user management.
 """
 
-# type: ignore
-from rest_framework import status  # type: ignore
-# type: ignore
-from rest_framework.response import Response  # type: ignore
-# type: ignore
-from rest_framework.views import APIView  # type: ignore
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from django.contrib.auth import get_user_model
 
