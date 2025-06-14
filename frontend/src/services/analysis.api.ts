@@ -1,6 +1,7 @@
 import api from './api.client';
 import { getCachedData, setCachedData, clearCache } from './cache';
-import type { Analysis, AnalysisSummary, AnalysisResult, BotAnalysis, IQDistribution, SentimentByDate } from './types';
+import type { AnalysisSummary, AnalysisResult, BotAnalysis, IQDistribution, SentimentByDate } from './types';
+import type { Analysis } from './types';
 
 export const getAnalyses = async (): Promise<Analysis[]> => {
   const cacheKey = 'analyses';

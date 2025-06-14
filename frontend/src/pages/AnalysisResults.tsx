@@ -461,25 +461,33 @@ const AnalysisResults = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {searchResults.results.map((result) => (
-                    <TableRow key={result.id}>
-                      <TableCell>
-                        {result.source_type === 'reddit' ? <RedditIcon /> : <TwitterIcon />}
-                      </TableCell>
-                      <TableCell>{result.content}</TableCell>
-                      <TableCell>{result.score}</TableCell>
-                      <TableCell>{result.perceived_iq}</TableCell>
-                      <TableCell>{result.bot_probability}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                        >
-                          Edit
-                        </Button>
+                  {Array.isArray(searchResults.results) && searchResults.results.length > 0 ? (
+                    searchResults.results.map((result) => (
+                      <TableRow key={result.id}>
+                        <TableCell>
+                          {result.source_type === 'reddit' ? <RedditIcon /> : <TwitterIcon />}
+                        </TableCell>
+                        <TableCell>{result.content}</TableCell>
+                        <TableCell>{result.score}</TableCell>
+                        <TableCell>{result.perceived_iq}</TableCell>
+                        <TableCell>{result.bot_probability}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                          >
+                            Edit
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        No results found or results are not an array.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

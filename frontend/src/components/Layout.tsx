@@ -12,27 +12,29 @@ import {
   Toolbar,
   Typography,
   Button,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
   Add as AddIcon,
   ExitToApp as LogoutIcon,
-  Brightness4 as Brightness4Icon,
-  Brightness7 as Brightness7Icon,
 } from '@mui/icons-material';
 import type { ReactNode } from 'react';
 import ListItemButton from '@mui/material/ListItemButton';
+import { themeOptions } from '../themes';
+import type { ThemeKey } from '../themes';
 
 const drawerWidth = 240;
 
 interface LayoutProps {
-  mode?: 'light' | 'dark';
-  toggleMode?: () => void;
+  selectedTheme: ThemeKey;
+  setSelectedTheme: React.Dispatch<ThemeKey>;
   children?: ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ mode = 'light', toggleMode, children }) => {
+const Layout: React.FC<LayoutProps> = ({ selectedTheme, setSelectedTheme, children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -89,9 +91,16 @@ const Layout: React.FC<LayoutProps> = ({ mode = 'light', toggleMode, children })
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Financial Sentiment Analysis
           </Typography>
-          <IconButton color="inherit" onClick={toggleMode} sx={{ mr: 1 }}>
-            {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-          </IconButton>
+          <Select
+            value={selectedTheme}
+            onChange={(e) => setSelectedTheme(e.target.value as ThemeKey)}
+            size="small"
+            sx={{ color: 'inherit', minWidth: 150, mr: 2, background: 'rgba(255,255,255,0.08)', borderRadius: 1 }}
+          >
+            {themeOptions.map((option) => (
+              <MenuItem key={option.key} value={option.key}>{option.label}</MenuItem>
+            ))}
+          </Select>
           <Button color="inherit" onClick={() => navigate('/login')}>
             Login
           </Button>

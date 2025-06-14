@@ -4,6 +4,8 @@ import './index.css'
 import App from './App.tsx'
 import React, { Component } from 'react'
 import type { ReactNode } from 'react'
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: unknown }> {
   constructor(props: { children: ReactNode }) {
@@ -36,7 +38,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <App />
+      </LocalizationProvider>
     </ErrorBoundary>
   </StrictMode>,
 )

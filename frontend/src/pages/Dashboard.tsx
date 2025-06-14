@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import { getAnalyses } from '../services/analysis.api';
-import type { Analysis } from '../services/analysis.api';
+import type { Analysis } from '../services/types';
 import Grid from '@mui/material/Grid';
 
 const Dashboard: React.FC = () => {
@@ -90,41 +90,51 @@ const Dashboard: React.FC = () => {
               </Paper>
             </Grid>
           ) : (
-            analyses.map((analysis) => (
-              <Grid item xs={12} md={6} lg={4} key={analysis.id}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      {analysis.query}
-                    </Typography>
-                    <Typography color="textSecondary" gutterBottom>
-                      Source: {analysis.source}
-                    </Typography>
-                    <Typography color="textSecondary" gutterBottom>
-                      Model: {analysis.model}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      Created: {new Date(analysis.created_at).toLocaleDateString()}
-                    </Typography>
-                  </CardContent>
-                  <CardActions>
-                    <Button
-                      size="small"
-                      color="primary"
-                      onClick={() => {
-                        if (analysis.id) {
-                          navigate(`/results/${analysis.id}`);
-                        } else {
-                          alert('Invalid analysis: missing ID');
-                        }
-                      }}
-                    >
-                      View Results
-                    </Button>
-                  </CardActions>
-                </Card>
+            Array.isArray(analyses) && analyses.length > 0 ? (
+              analyses.map((analysis) => (
+                <Grid item xs={12} md={6} lg={4} key={analysis.id}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        {analysis.query}
+                      </Typography>
+                      <Typography color="textSecondary" gutterBottom>
+                        Source: {analysis.source}
+                      </Typography>
+                      <Typography color="textSecondary" gutterBottom>
+                        Model: {analysis.model}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Created: {new Date(analysis.created_at).toLocaleDateString()}
+                      </Typography>
+                    </CardContent>
+                    <CardActions>
+                      <Button
+                        size="small"
+                        color="primary"
+                        onClick={() => {
+                          if (analysis.id) {
+                            navigate(`/results/${analysis.id}`);
+                          } else {
+                            alert('Invalid analysis: missing ID');
+                          }
+                        }}
+                      >
+                        View Results
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))
+            ) : (
+              <Grid item xs={12}>
+                <Paper sx={{ p: 4, textAlign: 'center' }}>
+                  <Typography variant="h6" color="textSecondary">
+                    No analyses found or analyses is not an array.
+                  </Typography>
+                </Paper>
               </Grid>
-            ))
+            )
           )}
         </Grid>
       </Box>
