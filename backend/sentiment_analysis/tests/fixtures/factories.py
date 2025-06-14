@@ -5,9 +5,7 @@ Factory functions for creating test objects using context7 patterns.
 from datetime import datetime, timezone
 
 import factory
-import pytz
 from factory.django import DjangoModelFactory
-
 from django.contrib.auth.models import User
 
 from ...models import SentimentAnalysis, SentimentResult
@@ -46,12 +44,12 @@ class SentimentResultFactory(DjangoModelFactory):
     class Meta:
         model = SentimentResult
 
-    analysis = factory.SubFactory(SentimentAnalysisFactory)
+    sentiment_analysis = factory.SubFactory(SentimentAnalysisFactory)
     content = factory.Faker("text", max_nb_chars=500)
     score = factory.Faker(
         "pyfloat", left_digits=1, right_digits=3, min_value=-1, max_value=1
     )
-    post_date = factory.LazyFunction(lambda: datetime.datetime.now(pytz.UTC))
+    post_date = factory.LazyFunction(lambda: datetime.now(timezone.utc))
     perceived_iq = factory.Faker("pyint", min_value=60, max_value=150)
     bot_probability = factory.Faker(
         "pyfloat", left_digits=0, right_digits=2, min_value=0, max_value=1
@@ -129,15 +127,15 @@ class HighBotProbabilityResultFactory(SentimentResultFactory):
 def create_analysis_with_results(num_results=10, **kwargs):
     """Create an analysis with associated results."""
     analysis = SentimentAnalysisFactory(**kwargs)
-    results = SentimentResultFactory.create_batch(num_results, analysis=analysis)
+    results = SentimentResultFactory.create_batch(num_results, sentiment_analysis=analysis)
     return analysis, results
 
 
-def create_mixed_sentiment_results(analysis, num_each=5):
+def create_mixed_sentiment_results(sentiment_analysis, num_each=5):
     """Create a mix of positive, negative, and neutral results."""
-    positive = PositiveSentimentResultFactory.create_batch(num_each, analysis=analysis)
-    negative = NegativeSentimentResultFactory.create_batch(num_each, analysis=analysis)
-    neutral = NeutralSentimentResultFactory.create_batch(num_each, analysis=analysis)
+    positive = PositiveSentimentResultFactory.create_batch(num_each, sentiment_analysis=sentiment_analysis)
+    negative = NegativeSentimentResultFactory.create_batch(num_each, sentiment_analysis=sentiment_analysis)
+    neutral = NeutralSentimentResultFactory.create_batch(num_each, sentiment_analysis=sentiment_analysis)
     return positive + negative + neutral
 
 
@@ -146,3 +144,5 @@ def create_completed_analysis_with_mixed_results(num_each=5):
     analysis = SentimentAnalysisFactory(status="completed")
     results = create_mixed_sentiment_results(analysis, num_each)
     return analysis, results
+
+# NOTE: Linter errors for missing stubs in test-only dependencies (factory, django) can be ignored for CI and local test runs. use context7

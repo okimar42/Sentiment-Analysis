@@ -828,7 +828,7 @@ else:
                     primary_score = llm_result["grok_score"]
 
                 sentiment_result = SentimentResult(
-                    sentiment_analysis_id=analysis.id,
+                    sentiment_analysis=analysis,
                     post_id=result_map["post_id"],
                     content=text,
                     score=primary_score,

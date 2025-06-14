@@ -2,6 +2,51 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## Theme System (Multi-Theme, Persistent, Context-Based)
+
+This project features a robust theme system with the following capabilities:
+
+- **Multiple Editor Themes:** Gruvbox, Dracula, Monokai, Solarized, Nord, VSCode Dark, and more (see `frontend/src/themes.ts`).
+- **Context-Based:** Uses a `ThemeContext` (`frontend/src/contexts/ThemeContext.tsx`) for global theme management.
+- **Persistent Selection:** Remembers the user's last selected theme using `localStorage`.
+- **Grouped Menu:** Theme picker groups themes by light/dark, shows checkmarks for the active theme, and is accessible from the app bar.
+- **Easy Extension:** Add new themes by extending the `themes` array in `frontend/src/themes.ts`.
+- **Visual Theme Previews:** The theme picker now shows a color swatch preview for each theme, displaying its primary, secondary, and background colors for quick visual selection.
+
+### Usage
+
+- The theme picker is available in the app bar. Click the current theme name to open the menu and select from grouped light/dark themes.
+- Each theme in the menu displays a color swatch preview of its palette.
+- The selected theme is applied instantly and will persist across reloads.
+- To add a new theme, add a new entry to the `themes` array in `frontend/src/themes.ts` with an `id`, `name`, and a Material-UI theme object.
+
+### Example: Adding a New Theme
+
+```ts
+import { createTheme } from '@mui/material/styles';
+
+const myCustomTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#123456' },
+    // ...
+  },
+});
+
+export const themes = [
+  // ...existing themes
+  { id: 'my-custom-theme', name: 'My Custom Theme', theme: myCustomTheme },
+];
+```
+
+### Technical Details
+- See `frontend/src/contexts/ThemeContext.tsx` for the context/provider implementation.
+- See `frontend/src/components/Layout.tsx` for the grouped menu UI logic.
+- All theme switching is handled via context; no prop drilling is required.
+- **AI Assistance:** This project uses context7 for AI-powered development and documentation improvements.
+
+---
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh

@@ -39,7 +39,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <App />
+      <App />
       </LocalizationProvider>
     </ErrorBoundary>
   </StrictMode>,

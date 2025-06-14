@@ -59,13 +59,13 @@ def create_test_analysis(
 
 
 def create_test_results(
-    analysis: SentimentAnalysis, count: int = 10, sentiment_mix: bool = False, **kwargs
+    sentiment_analysis: SentimentAnalysis, count: int = 10, sentiment_mix: bool = False, **kwargs
 ) -> List[SentimentResult]:
     """
     Create test sentiment results for an analysis.
 
     Args:
-        analysis: Analysis to associate results with
+        sentiment_analysis: Analysis to associate results with
         count: Number of results to create
         sentiment_mix: If True, create mix of positive/negative/neutral
         **kwargs: Additional result attributes
@@ -76,10 +76,10 @@ def create_test_results(
     if sentiment_mix:
         # Create balanced mix of sentiments
         num_each = count // 3
-        return create_mixed_sentiment_results(analysis, num_each)
+        return create_mixed_sentiment_results(sentiment_analysis, num_each)
     else:
         # Create uniform results
-        return SentimentResultFactory.create_batch(count, analysis=analysis, **kwargs)
+        return SentimentResultFactory.create_batch(count, sentiment_analysis=sentiment_analysis, **kwargs)
 
 
 def create_complete_test_scenario(
@@ -119,7 +119,7 @@ def create_complete_test_scenario(
 
             # Create results with sentiment mix
             results = create_test_results(
-                analysis, count=results_per_analysis, sentiment_mix=True
+                sentiment_analysis, count=results_per_analysis, sentiment_mix=True
             )
             all_results.extend(results)
 
@@ -133,13 +133,13 @@ def create_complete_test_scenario(
 
 
 def create_time_series_test_data(
-    analysis: SentimentAnalysis, days: int = 7, posts_per_day: int = 10
+    sentiment_analysis: SentimentAnalysis, days: int = 7, posts_per_day: int = 10
 ) -> List[SentimentResult]:
     """
     Create test data spread across time for time-series testing.
 
     Args:
-        analysis: Analysis to associate results with
+        sentiment_analysis: Analysis to associate results with
         days: Number of days to spread data across
         posts_per_day: Number of posts per day
 
@@ -157,7 +157,7 @@ def create_time_series_test_data(
             # Spread posts throughout the day
             post_time = post_date + timedelta(hours=post * (24 / posts_per_day))
 
-            result = SentimentResultFactory(analysis=analysis, post_date=post_time)
+            result = SentimentResultFactory(sentiment_analysis=sentiment_analysis, post_date=post_time)
             results.append(result)
 
     return results
@@ -177,19 +177,19 @@ def create_edge_case_test_data() -> Dict[str, Any]:
     single_result_analysis = create_test_analysis(
         query="single result", status="completed"
     )
-    single_result = SentimentResultFactory(analysis=single_result_analysis)
+    single_result = SentimentResultFactory(sentiment_analysis=single_result_analysis)
 
     # Analysis with extreme sentiment scores
     extreme_analysis = create_test_analysis(query="extreme scores", status="completed")
     extreme_results = [
         SentimentResultFactory(
-            analysis=extreme_analysis,
+            sentiment_analysis=extreme_analysis,
             score=1.0,  # Maximum positive
             perceived_iq=150,
             bot_probability=0.0,
         ),
         SentimentResultFactory(
-            analysis=extreme_analysis,
+            sentiment_analysis=extreme_analysis,
             score=-1.0,  # Maximum negative
             perceived_iq=60,
             bot_probability=1.0,
@@ -204,7 +204,7 @@ def create_edge_case_test_data() -> Dict[str, Any]:
         query="long content test", status="completed"
     )
     long_content_result = SentimentResultFactory(
-        analysis=long_content_analysis,
+        sentiment_analysis=long_content_analysis,
         content="This is a very long piece of content. " * 100,  # 500+ chars
     )
 
@@ -249,7 +249,7 @@ def create_performance_test_data(
                 batch_end = min(batch_start + batch_size, results_per_analysis)
                 batch_count = batch_end - batch_start
 
-                SentimentResultFactory.create_batch(batch_count, analysis=analysis)
+                SentimentResultFactory.create_batch(batch_count, sentiment_analysis=analysis)
                 total_results += batch_count
 
         return {

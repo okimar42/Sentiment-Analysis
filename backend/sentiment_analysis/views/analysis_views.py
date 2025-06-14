@@ -164,7 +164,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
             if pk is None:
                 return Response({"error": "Missing analysis ID"}, status=400)
             analysis = self.get_object()
-            results = SentimentResult.objects.filter(analysis=analysis)
+            results = SentimentResult.objects.filter(sentiment_analysis=analysis)
             sentiment_data = StatisticsService.get_sentiment_by_date(results)
             return Response(sentiment_data)
         except Exception as e:
@@ -180,7 +180,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
             if pk is None:
                 return Response({"error": "Missing analysis ID"}, status=400)
             analysis = self.get_object()
-            results = SentimentResult.objects.filter(analysis=analysis)
+            results = SentimentResult.objects.filter(sentiment_analysis=analysis)
             iq_data = StatisticsService.get_iq_distribution(results)
             return Response(iq_data)
         except Exception as e:
@@ -196,7 +196,7 @@ class SentimentAnalysisViewSet(viewsets.ModelViewSet):
             if pk is None:
                 return Response({"error": "Missing analysis ID"}, status=400)
             analysis = self.get_object()
-            results = SentimentResult.objects.filter(analysis=analysis)
+            results = SentimentResult.objects.filter(sentiment_analysis=analysis)
             bot_data = StatisticsService.get_bot_analysis(results)
             return Response(bot_data)
         except Exception as e:

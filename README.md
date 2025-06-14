@@ -1,5 +1,8 @@
 # Sentiment Analysis Web Application
 
+[![CI](https://github.com/yourusername/sentiment-analysis/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/sentiment-analysis/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/yourusername/sentiment-analysis/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/sentiment-analysis)
+
 A web application that performs sentiment analysis on Reddit and Twitter posts using various AI models. The application features a Django backend and a React frontend with comprehensive testing, AI-powered development workflows, and advanced deployment capabilities.
 
 ## Features
@@ -36,6 +39,8 @@ A web application that performs sentiment analysis on Reddit and Twitter posts u
 - Comprehensive testing with Vitest, Jest, and React Testing Library
 - ESLint for code quality
 - date-fns for date manipulation
+- **Multi-theme system with persistent, context-based theme picker.**
+  - See `frontend/README.md` for details on adding/extending themes and usage.
 
 ## Prerequisites
 
@@ -519,3 +524,8 @@ If you encounter errors like `exec format error` or `buildx: command not found` 
    You should see a version string, not an error.
 
 This is required for advanced Docker workflows, multi-arch builds, and for development scripts that use Buildx features.
+
+## CI/CD
+
+- Automated tests and linting run on every push via GitHub Actions.
+- Code coverage is reported for both backend (pytest-cov) and frontend (Jest) and uploaded to Codecov.

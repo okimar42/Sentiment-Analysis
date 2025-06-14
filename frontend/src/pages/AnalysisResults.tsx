@@ -91,8 +91,9 @@ const AnalysisResults = () => {
   });
   const [sentimentDistType, setSentimentDistType] = useState<'pie' | 'bar'>('pie');
 
-  // Use inline debounce to avoid dependency warning
-  const debouncedSearch = debounce(async (params: SearchParams) => {
+  // Memoize debouncedSearch to avoid dependency warning
+  const debouncedSearch = React.useMemo(() =>
+    debounce(async (params: SearchParams) => {
     if (!id) return;
     try {
       const results = await searchAnalysisResults(id, params);
@@ -115,13 +116,18 @@ const AnalysisResults = () => {
         total_pages: 1,
       }));
     }
-  }, 300);
+    }, 300)
+  , [id]);
 
   // Update search when params change
   useEffect(() => {
     if (id) {
       debouncedSearch(searchResults);
     }
+    // Cleanup debounced function on unmount
+    return () => {
+      debouncedSearch.cancel();
+    };
   }, [searchResults, id, debouncedSearch]);
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, newPage: number) => {
@@ -284,8 +290,10 @@ const AnalysisResults = () => {
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>Graph</InputLabel>
+                <InputLabel id="graph-type-label" htmlFor="graph-type-select">Graph</InputLabel>
                 <Select
+                  labelId="graph-type-label"
+                  id="graph-type-select"
                   value={String(sentimentDistType)}
                   onChange={(e) => setSentimentDistType(e.target.value as 'pie' | 'bar')}
                   label="Graph"
@@ -353,8 +361,10 @@ const AnalysisResults = () => {
               {/* Sentiment Filter */}
               <Grid item xs={12} md={2}>
                 <FormControl fullWidth>
-                  <InputLabel>Sentiment</InputLabel>
+                  <InputLabel id="sentiment-label" htmlFor="sentiment-select">Sentiment</InputLabel>
                   <Select
+                    labelId="sentiment-label"
+                    id="sentiment-select"
                     value={String(searchResults.sentiment)}
                     onChange={(e) => setSearchResults(prev => ({ ...prev, sentiment: String(e.target.value) }))}
                     label="Sentiment"
@@ -463,23 +473,23 @@ const AnalysisResults = () => {
                 <TableBody>
                   {Array.isArray(searchResults.results) && searchResults.results.length > 0 ? (
                     searchResults.results.map((result) => (
-                      <TableRow key={result.id}>
-                        <TableCell>
-                          {result.source_type === 'reddit' ? <RedditIcon /> : <TwitterIcon />}
-                        </TableCell>
-                        <TableCell>{result.content}</TableCell>
-                        <TableCell>{result.score}</TableCell>
-                        <TableCell>{result.perceived_iq}</TableCell>
-                        <TableCell>{result.bot_probability}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                          >
-                            Edit
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                    <TableRow key={result.id}>
+                      <TableCell>
+                        {result.source_type === 'reddit' ? <RedditIcon /> : <TwitterIcon />}
+                      </TableCell>
+                      <TableCell>{result.content}</TableCell>
+                      <TableCell>{result.score}</TableCell>
+                      <TableCell>{result.perceived_iq}</TableCell>
+                      <TableCell>{result.bot_probability}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                        >
+                          Edit
+                        </Button>
+                      </TableCell>
+                    </TableRow>
                     ))
                   ) : (
                     <TableRow>

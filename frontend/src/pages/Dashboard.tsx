@@ -91,41 +91,41 @@ const Dashboard: React.FC = () => {
             </Grid>
           ) : (
             Array.isArray(analyses) && analyses.length > 0 ? (
-              analyses.map((analysis) => (
-                <Grid item xs={12} md={6} lg={4} key={analysis.id}>
-                  <Card>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
-                        {analysis.query}
-                      </Typography>
-                      <Typography color="textSecondary" gutterBottom>
-                        Source: {analysis.source}
-                      </Typography>
-                      <Typography color="textSecondary" gutterBottom>
-                        Model: {analysis.model}
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        Created: {new Date(analysis.created_at).toLocaleDateString()}
-                      </Typography>
-                    </CardContent>
-                    <CardActions>
-                      <Button
-                        size="small"
-                        color="primary"
-                        onClick={() => {
-                          if (analysis.id) {
-                            navigate(`/results/${analysis.id}`);
-                          } else {
-                            alert('Invalid analysis: missing ID');
-                          }
-                        }}
-                      >
-                        View Results
-                      </Button>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              ))
+            analyses.map((analysis) => (
+              <Grid item xs={12} md={6} lg={4} key={analysis.id}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {analysis.query}
+                    </Typography>
+                    <Typography color="textSecondary" gutterBottom>
+                      Source: {analysis.source}
+                    </Typography>
+                    <Typography color="textSecondary" gutterBottom>
+                      Model: {analysis.model}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Created: {new Date(analysis.created_at).toLocaleDateString()}
+                    </Typography>
+                  </CardContent>
+                  <CardActions>
+                    <Button
+                      size="small"
+                      color="primary"
+                      onClick={() => {
+                        if (analysis.id) {
+                          navigate(`/results/${analysis.id}`);
+                        } else {
+                          alert('Invalid analysis: missing ID');
+                        }
+                      }}
+                    >
+                      View Results
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))
             ) : (
               <Grid item xs={12}>
                 <Paper sx={{ p: 4, textAlign: 'center' }}>

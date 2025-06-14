@@ -72,12 +72,14 @@ jobs:
         run: |
           cd backend
           python manage.py migrate
-          pytest --maxfail=3 --disable-warnings -q
+          pytest --maxfail=3 --disable-warnings -q --cov=. --cov-report=xml | tee ../backend-test-results.txt
+          mv coverage.xml ../backend-coverage.xml
 
       - name: Run frontend tests
         run: |
           cd frontend
-          npm run test -- --run
+          npm run test -- --ci --coverage | tee ../frontend-test-results.txt
+          cp coverage/lcov.info ../frontend-lcov.info
 
       - name: Lint backend
         run: |
@@ -87,4 +89,44 @@ jobs:
       - name: Lint frontend
         run: |
           cd frontend
-          npm run lint 
+          npm run lint
+
+      # Job summary for test results
+      - name: Upload test results summary
+        if: always()
+        run: |
+          echo '### Backend Test Results' >> $GITHUB_STEP_SUMMARY
+          cat backend-test-results.txt >> $GITHUB_STEP_SUMMARY
+          echo '### Frontend Test Results' >> $GITHUB_STEP_SUMMARY
+          cat frontend-test-results.txt >> $GITHUB_STEP_SUMMARY
+
+      # Upload coverage artifacts
+      - name: Upload backend coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-coverage
+          path: backend-coverage.xml
+      - name: Upload frontend coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-coverage
+          path: frontend-lcov.info
+
+      # Upload to Codecov if token is set
+      - name: Upload coverage to Codecov
+        if: env.CODECOV_TOKEN != null
+        uses: codecov/codecov-action@v3
+        with:
+          files: backend-coverage.xml,frontend-lcov.info
+          flags: backend,frontend
+          name: codecov-umbrella
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      # Deploy to production if on main branch
+      - name: Deploy to Production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo 'Deploying to production...'
+          # Insert real deployment logic here (e.g., Docker push, SSH, Vercel CLI, etc.) 

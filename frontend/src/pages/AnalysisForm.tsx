@@ -287,7 +287,7 @@ function AnalysisForm() {
                       />
                     )}
                     renderOption={(props, option) => {
-                      const { key: _, ...otherProps } = props;
+                      const { ...otherProps } = props;
                       return (
                         <li {...otherProps}>
                           {MODELS.find(m => m.value === option)?.label || option}
@@ -316,7 +316,7 @@ function AnalysisForm() {
                         />
                       )}
                       renderOption={(props, option, { selected }) => {
-                        const { key: _, ...otherProps } = props;
+                        const { ...otherProps } = props;
                         return (
                           <li {...otherProps}>
                             <Checkbox
