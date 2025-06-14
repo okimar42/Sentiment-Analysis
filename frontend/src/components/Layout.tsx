@@ -14,8 +14,6 @@ import {
   Button,
   Menu,
   MenuItem,
-  ListSubheader,
-  Divider,
   Tooltip
 } from '@mui/material';
 import {
@@ -66,6 +64,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   // Preview-on-hover state
   const [hoveredTheme, setHoveredTheme] = useState<AppTheme | null>(null);
+  const [lastSelectedThemeId, setLastSelectedThemeId] = useState<string>(themeId);
 
   // Merge custom themes with available themes
   const allThemes = [...availableThemes, ...customThemes];
@@ -90,10 +89,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const handleThemeMenuClose = () => {
     setThemeMenuAnchor(null);
+    setHoveredTheme(null);
   };
 
   const handleThemeSelect = (selectedThemeId: string) => {
     setTheme(selectedThemeId);
+    setHoveredTheme(null);
     handleThemeMenuClose();
   };
 
@@ -148,43 +149,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     }} />
   );
 
-  // Theme categories mapping
-  const themeCategories: { [key: string]: string } = {
-    vscode: 'VSCode',
-    gruvbox: 'Gruvbox',
-    'gruvbox-material': 'Gruvbox',
-    atom: 'Atom',
-    github: 'GitHub',
-    tokyo: 'Tokyo Night',
-    material: 'Material',
-    dracula: 'Classic',
-    monokai: 'Classic',
-    solarized: 'Classic',
-    nord: 'Classic',
-    onedark: 'Classic',
-    onelight: 'Classic',
-    nightowl: 'Classic',
-    cobalt: 'Classic',
-    synthwave: 'Fun',
-    bullish: 'Fun',
-    crypto: 'Fun',
-    wall: 'Fun',
-  };
-
-  function getThemeCategory(themeId: string, themeName: string) {
-    for (const key in themeCategories) {
-      if (themeId.includes(key) || themeName.toLowerCase().includes(key)) {
-        return themeCategories[key];
-      }
-    }
-    return 'Other';
-  }
-
-  // Group themes by category
+  // Group themes by category using the new 'category' property
   function groupThemes(themes: AppTheme[]) {
     const groups: { [cat: string]: AppTheme[] } = {};
     for (const t of themes) {
-      const cat = getThemeCategory(t.id, t.name);
+      const cat = t.category || 'Other';
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(t);
     }
@@ -211,8 +180,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         const uniqueId = data.id + '-' + Date.now();
         setCustomThemes(ts => [...ts, { ...data, id: uniqueId, name: data.name + ' (Imported)' }]);
         setImportError(null);
-      } catch (err: any) {
-        setImportError('Failed to import theme: ' + err.message);
+      } catch (err: unknown) {
+        let message = 'Unknown error';
+        if (err instanceof Error) message = err.message;
+        setImportError('Failed to import theme: ' + message);
       }
     };
     reader.readAsText(file);
@@ -231,12 +202,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     URL.revokeObjectURL(url);
   };
 
-  // Apply preview-on-hover
+  // When themeId changes (via selection), update lastSelectedThemeId
+  useEffect(() => {
+    setLastSelectedThemeId(themeId);
+  }, [themeId]);
+
+  // Apply preview-on-hover (temporary only)
   useEffect(() => {
     if (hoveredTheme) {
       setTheme(hoveredTheme.id);
-    } else if (themeId !== currentTheme.id) {
-      setTheme(currentTheme.id);
+    } else {
+      // Restore the last selected theme when not hovering
+      setTheme(lastSelectedThemeId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hoveredTheme]);

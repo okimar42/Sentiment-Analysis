@@ -1,0 +1,33 @@
+Product Name: SocialSense – Multi-Platform Social Media Sentiment Analyzer
+
+Vision:
+Empower brands, investors, and analysts to understand and act on real-time sentiment trends across all major social media platforms, using state-of-the-art AI and a beautiful, actionable dashboard.
+
+Core Features:
+- Multi-platform support: Twitter/X, Reddit, Instagram, Facebook, TikTok, YouTube.
+- Real-time and historical sentiment analysis.
+- Advanced AI/LLM models (GPT-4, Gemini, Grok, VADER, etc.).
+- IQ, bot, and sarcasm detection.
+- Modern, responsive dashboard with charts, filters, and export options.
+- User management: SSO/OAuth, roles, account management.
+- API integrations: REST, webhooks, BI tool export.
+- Usage metering and billing hooks.
+- GDPR/CCPA compliance.
+- Demo data and case studies for presentations.
+
+User Stories:
+- As a user, I can log in securely and connect my social accounts.
+- As a user, I can run sentiment analysis on any topic or brand across all platforms.
+- As a user, I see real-time and historical trends, with charts and downloadable reports.
+- As an admin, I can manage users, roles, and billing.
+- As a developer, I can integrate with the platform via public APIs and webhooks.
+- As a compliance officer, I can export or delete user data on request.
+
+Technical Requirements:
+- Dockerized, cloud-ready deployment.
+- Scalable backend with Celery for background tasks.
+- Modular ingestion for easy addition of new platforms.
+- Test-driven development and CI/CD.
+- Comprehensive documentation.
+
+use context7 

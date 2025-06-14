@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/yourusername/sentiment-analysis/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/sentiment-analysis/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/yourusername/sentiment-analysis/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/sentiment-analysis)
+[![Backend Integrity Tests](https://github.com/<YOUR_ORG_OR_USER>/<YOUR_REPO>/actions/workflows/ci.yml/badge.svg)](https://github.com/<YOUR_ORG_OR_USER>/<YOUR_REPO>/actions/workflows/ci.yml)
 
 A web application that performs sentiment analysis on Reddit and Twitter posts using various AI models. The application features a Django backend and a React frontend with comprehensive testing, AI-powered development workflows, and advanced deployment capabilities.
 
@@ -529,3 +530,45 @@ This is required for advanced Docker workflows, multi-arch builds, and for devel
 
 - Automated tests and linting run on every push via GitHub Actions.
 - Code coverage is reported for both backend (pytest-cov) and frontend (Jest) and uploaded to Codecov.
+
+## Backend Integrity Test Pipeline
+
+This project enforces backend registry/configuration integrity using automated tests and CI integration. All critical registries (model choices, rate limits, __all__ exports, etc.) are protected by comprehensive tests in `backend/sentiment_analysis/tests/test_integrity.py`.
+
+### Running Locally
+
+```bash
+cd backend
+pytest sentiment_analysis/tests/test_integrity.py
+```
+
+### CI Integration
+- Integrity tests run automatically on every push and pull request via GitHub Actions.
+- CI fails and blocks merges if any integrity test fails.
+- Test results are summarized in the GitHub Actions UI.
+
+### Branch Protection
+- The main/master branch is protected by required status checks.
+- Merges are blocked unless all integrity tests pass.
+- See [GitHub Settings > Branches] for configuration details.
+
+### Troubleshooting
+- If integrity tests fail, check the GitHub Actions summary for details.
+- Common issues: missing/duplicate registry entries, drift between code and config, or incomplete __all__ exports.
+- For help, see the inline comments in `test_integrity.py` or contact the maintainers.
+
+## Testing Standards
+
+This project enforces strict registry/configuration integrity testing for all backend microservices and Python packages. All critical registries (choices, configs, rate limits, API endpoints, etc.) must be validated by automated tests to prevent drift, duplication, or omissions.
+
+- **Template:** [test_integrity_template.py](backend/test_integrity_template.py)
+- **Guidelines:** [docs/testing-guidelines.md](docs/testing-guidelines.md)
+- **Onboarding:** [docs/onboarding.md](docs/onboarding.md)
+- **New Service Checklist:** [docs/new-service-checklist.md](docs/new-service-checklist.md)
+
+### Quick Start for New Services
+1. Copy `test_integrity_template.py` to your service as `test_integrity.py`
+2. Customize fixtures and test functions for your registries/configs
+3. Integrate the test into your CI pipeline
+4. Ensure branch protection requires passing integrity tests
+5. See [Testing Guidelines](docs/testing-guidelines.md) for full instructions

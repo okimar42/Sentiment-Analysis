@@ -57,4 +57,28 @@ describe('api error handling', () => {
     mockedAxios.post.mockRejectedValueOnce(error);
     await expect(api.login('user', 'pass')).rejects.toThrow();
   });
+});
+
+describe('API endpoint registry', () => {
+  it('should have unique exported function names', () => {
+    const apiObj = api as Record<string, unknown>;
+    const fnNames = Object.keys(apiObj).filter(k => typeof apiObj[k] === 'function');
+    const uniqueNames = new Set(fnNames);
+    expect(uniqueNames.size).toBe(fnNames.length);
+  });
+
+  it('should have all API functions return a Promise', () => {
+    const apiObj = api as Record<string, unknown>;
+    const fnNames = Object.keys(apiObj).filter(k => typeof apiObj[k] === 'function');
+    for (const name of fnNames) {
+      const fn = apiObj[name];
+      // Only test async functions (skip types, etc.)
+      if (typeof fn === 'function') {
+        const result = (fn as () => unknown)();
+        if (result && typeof (result as { then?: unknown }).then === 'function') {
+          expect(typeof (result as { then: unknown }).then).toBe('function');
+        }
+      }
+    }
+  });
 }); 

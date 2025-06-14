@@ -81,6 +81,11 @@ jobs:
           npm run test -- --ci --coverage | tee ../frontend-test-results.txt
           cp coverage/lcov.info ../frontend-lcov.info
 
+      - name: Run backend integrity tests
+        run: |
+          cd backend
+          pytest sentiment_analysis/tests/test_integrity.py --maxfail=3 --disable-warnings -q | tee ../backend-integrity-results.txt
+
       - name: Lint backend
         run: |
           cd backend
@@ -99,6 +104,8 @@ jobs:
           cat backend-test-results.txt >> $GITHUB_STEP_SUMMARY
           echo '### Frontend Test Results' >> $GITHUB_STEP_SUMMARY
           cat frontend-test-results.txt >> $GITHUB_STEP_SUMMARY
+          echo '### Backend Integrity Test Results' >> $GITHUB_STEP_SUMMARY
+          cat backend-integrity-results.txt >> $GITHUB_STEP_SUMMARY
 
       # Upload coverage artifacts
       - name: Upload backend coverage report

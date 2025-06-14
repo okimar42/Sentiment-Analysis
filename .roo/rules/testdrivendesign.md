@@ -1,7 +1,7 @@
 ---
 description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 Test-Driven Design Rule
 Whenever you request a new feature, change, or refactor:

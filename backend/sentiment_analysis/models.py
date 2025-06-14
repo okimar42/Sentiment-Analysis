@@ -119,6 +119,9 @@ class SentimentResult(models.Model):
     # Grok score
     grok_score = models.FloatField(default=0)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     class Meta:
         unique_together = ("sentiment_analysis", "post_id")
         indexes = [

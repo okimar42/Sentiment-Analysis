@@ -5,6 +5,7 @@ export interface AppTheme {
   id: string;
   name: string;
   theme: Theme;
+  category: string;
 }
 
 // Gruvbox Dark
@@ -180,6 +181,21 @@ const synthwave84 = createTheme({
     secondary: { main: '#08f7fe' },
     background: { default: '#2a2139', paper: '#1a1626' },
     text: { primary: '#f4f4f4', secondary: '#f92aad' },
+  },
+});
+
+// Bloomberg Terminal
+const bloombergTerminal = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#00FF41' }, // neon green
+    secondary: { main: '#FFD700' }, // yellow
+    background: { default: '#101010', paper: '#181818' },
+    text: { primary: '#00FF41', secondary: '#FFD700' },
+    error: { main: '#FF3131' },
+    success: { main: '#00FF41' },
+    warning: { main: '#FFD700' },
+    info: { main: '#00BFFF' },
   },
 });
 
@@ -378,36 +394,377 @@ const tokyoNightLight = createTheme({
   },
 });
 
+// Editor Themes
+const sublimeText = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#ff9800' },
+    secondary: { main: '#272822' },
+    background: { default: '#23241f', paper: '#272822' },
+    text: { primary: '#f8f8f2', secondary: '#75715e' },
+  },
+});
+const jetBrains = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#ff2c6d' },
+    secondary: { main: '#20e3b2' },
+    background: { default: '#2b2b2b', paper: '#323232' },
+    text: { primary: '#a9b7c6', secondary: '#808080' },
+  },
+});
+const notepadPlus = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#8dc63f' },
+    secondary: { main: '#ffffff' },
+    background: { default: '#f5f5f5', paper: '#e0e0e0' },
+    text: { primary: '#333333', secondary: '#8dc63f' },
+  },
+});
+const emacs = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#7f7fff' },
+    secondary: { main: '#ff7f7f' },
+    background: { default: '#f6f6f6', paper: '#eaeaea' },
+    text: { primary: '#22223b', secondary: '#7f7fff' },
+  },
+});
+const vim = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#019833' },
+    secondary: { main: '#f7e017' },
+    background: { default: '#282828', paper: '#1d2021' },
+    text: { primary: '#ebdbb2', secondary: '#b8bb26' },
+  },
+});
+
+// OS Themes
+const windows = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#0078d7' },
+    secondary: { main: '#f3f3f3' },
+    background: { default: '#ffffff', paper: '#f3f3f3' },
+    text: { primary: '#222222', secondary: '#0078d7' },
+  },
+});
+const macos = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#007aff' },
+    secondary: { main: '#f5f5f7' },
+    background: { default: '#f5f5f7', paper: '#ffffff' },
+    text: { primary: '#222222', secondary: '#007aff' },
+  },
+});
+const ios = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#0a84ff' },
+    secondary: { main: '#f2f2f7' },
+    background: { default: '#f2f2f7', paper: '#ffffff' },
+    text: { primary: '#222222', secondary: '#0a84ff' },
+  },
+});
+const android = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#3ddc84' },
+    secondary: { main: '#fafafa' },
+    background: { default: '#fafafa', paper: '#ffffff' },
+    text: { primary: '#222222', secondary: '#3ddc84' },
+  },
+});
+const ubuntu = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#e95420' },
+    secondary: { main: '#77216f' },
+    background: { default: '#2c001e', paper: '#77216f' },
+    text: { primary: '#ffffff', secondary: '#e95420' },
+  },
+});
+const mint = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#87cf3e' },
+    secondary: { main: '#ffffff' },
+    background: { default: '#e8f5e9', paper: '#ffffff' },
+    text: { primary: '#222222', secondary: '#87cf3e' },
+  },
+});
+
+// Brand Themes
+const facebook = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#1877f3' },
+    secondary: { main: '#f5f6fa' },
+    background: { default: '#f5f6fa', paper: '#ffffff' },
+    text: { primary: '#222222', secondary: '#1877f3' },
+  },
+});
+const twitter = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#1da1f2' },
+    secondary: { main: '#e1e8ed' },
+    background: { default: '#e1e8ed', paper: '#ffffff' },
+    text: { primary: '#222222', secondary: '#1da1f2' },
+  },
+});
+const discord = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#5865f2' },
+    secondary: { main: '#23272a' },
+    background: { default: '#23272a', paper: '#2c2f33' },
+    text: { primary: '#ffffff', secondary: '#5865f2' },
+  },
+});
+const slack = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#611f69' },
+    secondary: { main: '#ecb22e' },
+    background: { default: '#f8f8f8', paper: '#ffffff' },
+    text: { primary: '#222222', secondary: '#611f69' },
+  },
+});
+const spotify = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#1db954' },
+    secondary: { main: '#191414' },
+    background: { default: '#191414', paper: '#282828' },
+    text: { primary: '#ffffff', secondary: '#1db954' },
+  },
+});
+const apple = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#a2aaad' },
+    secondary: { main: '#f5f5f7' },
+    background: { default: '#f5f5f7', paper: '#ffffff' },
+    text: { primary: '#222222', secondary: '#a2aaad' },
+  },
+});
+const google = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#4285f4' },
+    secondary: { main: '#fbbc05' },
+    background: { default: '#ffffff', paper: '#f8f9fa' },
+    text: { primary: '#222222', secondary: '#4285f4' },
+  },
+});
+
+// Nature Themes
+const forest = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#228b22' },
+    secondary: { main: '#a3c9a8' },
+    background: { default: '#183a1d', paper: '#2e5339' },
+    text: { primary: '#e6f2e6', secondary: '#a3c9a8' },
+  },
+});
+const ocean = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#1976d2' },
+    secondary: { main: '#00bcd4' },
+    background: { default: '#0a192f', paper: '#112240' },
+    text: { primary: '#e0f7fa', secondary: '#b3e5fc' },
+  },
+});
+const sunset = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#ff7043' },
+    secondary: { main: '#ffd54f' },
+    background: { default: '#fff3e0', paper: '#ffe0b2' },
+    text: { primary: '#6d4c41', secondary: '#ff7043' },
+  },
+});
+const desert = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#e1ad01' },
+    secondary: { main: '#f9d29d' },
+    background: { default: '#f9e4b7', paper: '#f9d29d' },
+    text: { primary: '#7c4700', secondary: '#e1ad01' },
+  },
+});
+const mountain = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#6b7a8f' },
+    secondary: { main: '#b8a47e' },
+    background: { default: '#2e3c4f', paper: '#3e4c5f' },
+    text: { primary: '#e0e6ed', secondary: '#b8a47e' },
+  },
+});
+
+// Fun/Trendy Themes
+const neon = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#39ff14' },
+    secondary: { main: '#ff0266' },
+    background: { default: '#0f0f0f', paper: '#1a1a1a' },
+    text: { primary: '#ffffff', secondary: '#39ff14' },
+  },
+});
+const cyberpunk = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#ff0090' },
+    secondary: { main: '#00fff7' },
+    background: { default: '#1a0033', paper: '#2d004d' },
+    text: { primary: '#fff', secondary: '#ff0090' },
+  },
+});
+const pastel = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#a3c9a8' },
+    secondary: { main: '#f7cac9' },
+    background: { default: '#f9f6f7', paper: '#fff' },
+    text: { primary: '#4a4a4a', secondary: '#a3a3a3' },
+  },
+});
+const vaporwave = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#ff71ce' },
+    secondary: { main: '#01cdfe' },
+    background: { default: '#232946', paper: '#393e46' },
+    text: { primary: '#fff', secondary: '#ff71ce' },
+  },
+});
+const candy = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#ffb6b9' },
+    secondary: { main: '#fae3d9' },
+    background: { default: '#fff', paper: '#fae3d9' },
+    text: { primary: '#6a0572', secondary: '#ffb6b9' },
+  },
+});
+const halloween = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#ff7518' },
+    secondary: { main: '#2e2e2e' },
+    background: { default: '#2e2e2e', paper: '#1a1a1a' },
+    text: { primary: '#fff', secondary: '#ff7518' },
+  },
+});
+const christmas = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#d7263d' },
+    secondary: { main: '#a2d5c6' },
+    background: { default: '#fff', paper: '#a2d5c6' },
+    text: { primary: '#1b1b1b', secondary: '#d7263d' },
+  },
+});
+const valentine = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#ff6f91' },
+    secondary: { main: '#ffb6b9' },
+    background: { default: '#fff0f3', paper: '#ffb6b9' },
+    text: { primary: '#6a0572', secondary: '#ff6f91' },
+  },
+});
+const rainbow = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#ff595e' },
+    secondary: { main: '#ffca3a' },
+    background: { default: '#8ac926', paper: '#1982c4' },
+    text: { primary: '#6a0572', secondary: '#ff595e' },
+  },
+});
+const highContrast = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#ffffff' },
+    secondary: { main: '#000000' },
+    background: { default: '#000000', paper: '#222222' },
+    text: { primary: '#ffffff', secondary: '#ffff00' },
+  },
+});
+
 export const themes: AppTheme[] = [
-  { id: 'gruvbox-dark', name: 'Gruvbox Dark', theme: gruvboxDark },
-  { id: 'gruvbox-light', name: 'Gruvbox Light', theme: gruvboxLight },
-  { id: 'dracula', name: 'Dracula', theme: dracula },
-  { id: 'monokai', name: 'Monokai', theme: monokai },
-  { id: 'solarized-dark', name: 'Solarized Dark', theme: solarizedDark },
-  { id: 'solarized-light', name: 'Solarized Light', theme: solarizedLight },
-  { id: 'nord', name: 'Nord', theme: nord },
-  { id: 'one-dark', name: 'One Dark', theme: oneDark },
-  { id: 'one-light', name: 'One Light', theme: oneLight },
-  { id: 'night-owl', name: 'Night Owl', theme: nightOwl },
-  { id: 'cobalt2', name: 'Cobalt2', theme: cobalt2 },
-  { id: 'material-dark', name: 'Material Dark', theme: materialDark },
-  { id: 'material-light', name: 'Material Light', theme: materialLight },
-  { id: 'ayu-dark', name: 'Ayu Dark', theme: ayuDark },
-  { id: 'ayu-light', name: 'Ayu Light', theme: ayuLight },
-  { id: 'synthwave84', name: "SynthWave '84", theme: synthwave84 },
-  { id: 'bullish-meme', name: '🚀 Bullish Meme', theme: bullishMeme },
-  { id: 'crypto-night', name: '₿ Crypto Night', theme: cryptoNight },
-  { id: 'wall-street-retro', name: '📈 Wall Street Retro', theme: wallStreetRetro },
-  { id: 'vscode-dark', name: 'VSCode Dark', theme: vscodeDark },
-  { id: 'vscode-light', name: 'VSCode Light', theme: vscodeLight },
-  { id: 'gruvbox-material-dark', name: 'Gruvbox Material Dark', theme: gruvboxMaterialDark },
-  { id: 'gruvbox-material-light', name: 'Gruvbox Material Light', theme: gruvboxMaterialLight },
-  { id: 'atom-one-dark', name: 'Atom One Dark', theme: atomOneDark },
-  { id: 'atom-one-light', name: 'Atom One Light', theme: atomOneLight },
-  { id: 'github-dark', name: 'GitHub Dark', theme: githubDark },
-  { id: 'github-light', name: 'GitHub Light', theme: githubLight },
-  { id: 'tokyo-night', name: 'Tokyo Night', theme: tokyoNight },
-  { id: 'tokyo-night-light', name: 'Tokyo Night Light', theme: tokyoNightLight },
+  { id: 'gruvbox-dark', name: 'Gruvbox Dark', theme: gruvboxDark, category: 'Classic' },
+  { id: 'gruvbox-light', name: 'Gruvbox Light', theme: gruvboxLight, category: 'Classic' },
+  { id: 'dracula', name: 'Dracula', theme: dracula, category: 'Classic' },
+  { id: 'monokai', name: 'Monokai', theme: monokai, category: 'Classic' },
+  { id: 'solarized-dark', name: 'Solarized Dark', theme: solarizedDark, category: 'Classic' },
+  { id: 'solarized-light', name: 'Solarized Light', theme: solarizedLight, category: 'Classic' },
+  { id: 'nord', name: 'Nord', theme: nord, category: 'Classic' },
+  { id: 'one-dark', name: 'One Dark', theme: oneDark, category: 'Classic' },
+  { id: 'one-light', name: 'One Light', theme: oneLight, category: 'Classic' },
+  { id: 'night-owl', name: 'Night Owl', theme: nightOwl, category: 'Classic' },
+  { id: 'cobalt2', name: 'Cobalt2', theme: cobalt2, category: 'Classic' },
+  { id: 'material-dark', name: 'Material Dark', theme: materialDark, category: 'Classic' },
+  { id: 'material-light', name: 'Material Light', theme: materialLight, category: 'Classic' },
+  { id: 'ayu-dark', name: 'Ayu Dark', theme: ayuDark, category: 'Classic' },
+  { id: 'ayu-light', name: 'Ayu Light', theme: ayuLight, category: 'Classic' },
+  { id: 'synthwave84', name: "SynthWave '84", theme: synthwave84, category: 'Classic' },
+  { id: 'bloomberg-terminal', name: 'Bloomberg Terminal', theme: bloombergTerminal, category: 'Classic' },
+  { id: 'bullish-meme', name: '🚀 Bullish Meme', theme: bullishMeme, category: 'Fun/Trendy' },
+  { id: 'crypto-night', name: '₿ Crypto Night', theme: cryptoNight, category: 'Fun/Trendy' },
+  { id: 'wall-street-retro', name: '📈 Wall Street Retro', theme: wallStreetRetro, category: 'Fun/Trendy' },
+  { id: 'vscode-dark', name: 'VSCode Dark', theme: vscodeDark, category: 'Classic' },
+  { id: 'vscode-light', name: 'VSCode Light', theme: vscodeLight, category: 'Classic' },
+  { id: 'gruvbox-material-dark', name: 'Gruvbox Material Dark', theme: gruvboxMaterialDark, category: 'Classic' },
+  { id: 'gruvbox-material-light', name: 'Gruvbox Material Light', theme: gruvboxMaterialLight, category: 'Classic' },
+  { id: 'atom-one-dark', name: 'Atom One Dark', theme: atomOneDark, category: 'Classic' },
+  { id: 'atom-one-light', name: 'Atom One Light', theme: atomOneLight, category: 'Classic' },
+  { id: 'github-dark', name: 'GitHub Dark', theme: githubDark, category: 'Classic' },
+  { id: 'github-light', name: 'GitHub Light', theme: githubLight, category: 'Classic' },
+  { id: 'tokyo-night', name: 'Tokyo Night', theme: tokyoNight, category: 'Classic' },
+  { id: 'tokyo-night-light', name: 'Tokyo Night Light', theme: tokyoNightLight, category: 'Classic' },
+  { id: 'sublime-text', name: 'Sublime Text', theme: sublimeText, category: 'Classic' },
+  { id: 'jetbrains', name: 'JetBrains', theme: jetBrains, category: 'Classic' },
+  { id: 'notepad-plus', name: 'Notepad++', theme: notepadPlus, category: 'Classic' },
+  { id: 'emacs', name: 'Emacs', theme: emacs, category: 'Classic' },
+  { id: 'vim', name: 'Vim', theme: vim, category: 'Classic' },
+  { id: 'windows', name: 'Windows', theme: windows, category: 'OS' },
+  { id: 'macos', name: 'macOS', theme: macos, category: 'OS' },
+  { id: 'ios', name: 'iOS', theme: ios, category: 'OS' },
+  { id: 'android', name: 'Android', theme: android, category: 'OS' },
+  { id: 'ubuntu', name: 'Ubuntu', theme: ubuntu, category: 'OS' },
+  { id: 'mint', name: 'Mint', theme: mint, category: 'OS' },
+  { id: 'facebook', name: 'Facebook', theme: facebook, category: 'Brand' },
+  { id: 'twitter', name: 'Twitter', theme: twitter, category: 'Brand' },
+  { id: 'discord', name: 'Discord', theme: discord, category: 'Brand' },
+  { id: 'slack', name: 'Slack', theme: slack, category: 'Brand' },
+  { id: 'spotify', name: 'Spotify', theme: spotify, category: 'Brand' },
+  { id: 'apple', name: 'Apple', theme: apple, category: 'Brand' },
+  { id: 'google', name: 'Google', theme: google, category: 'Brand' },
+  { id: 'forest', name: 'Forest', theme: forest, category: 'Nature' },
+  { id: 'ocean', name: 'Ocean', theme: ocean, category: 'Nature' },
+  { id: 'sunset', name: 'Sunset', theme: sunset, category: 'Nature' },
+  { id: 'desert', name: 'Desert', theme: desert, category: 'Nature' },
+  { id: 'mountain', name: 'Mountain', theme: mountain, category: 'Nature' },
+  { id: 'neon', name: 'Neon', theme: neon, category: 'Fun/Trendy' },
+  { id: 'cyberpunk', name: 'Cyberpunk', theme: cyberpunk, category: 'Fun/Trendy' },
+  { id: 'pastel', name: 'Pastel', theme: pastel, category: 'Fun/Trendy' },
+  { id: 'vaporwave', name: 'Vaporwave', theme: vaporwave, category: 'Fun/Trendy' },
+  { id: 'candy', name: 'Candy', theme: candy, category: 'Fun/Trendy' },
+  { id: 'halloween', name: 'Halloween', theme: halloween, category: 'Fun/Trendy' },
+  { id: 'christmas', name: 'Christmas', theme: christmas, category: 'Fun/Trendy' },
+  { id: 'valentine', name: 'Valentine', theme: valentine, category: 'Fun/Trendy' },
+  { id: 'rainbow', name: 'Rainbow', theme: rainbow, category: 'Fun/Trendy' },
+  { id: 'high-contrast', name: 'High Contrast', theme: highContrast, category: 'High Contrast' },
 ];
 
 export const getThemeById = (id: string): AppTheme => {

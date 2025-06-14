@@ -834,7 +834,7 @@ else:
                     primary_score = llm_result["grok_score"]
 
                 sentiment_result = SentimentResult(
-                    sentiment_analysis_id=analysis.id,
+                    sentiment_analysis=analysis,
                     post_id=result_map["post_id"],
                     content=text,
                     score=primary_score,
@@ -1372,6 +1372,12 @@ else:
                 "emotional_impact": "Analysis failed",
             }
 
+    def filter_keys(d: dict, allowed: set, context: str = "") -> dict:
+        unexpected = set(d) - allowed
+        if unexpected:
+            logger.warning(f"Unexpected keys in {context}: {unexpected}")
+        return {k: v for k, v in d.items() if k in allowed}
+
     async def analyze_with_llms(
         texts: Union[str, List[str]],
         selected_llms: list,
@@ -1458,23 +1464,21 @@ else:
                     sentiment_results["grok"] = grok_results
 
             # Step 2: Process each text's additional features sequentially
+            ALLOWED_KEYS = {
+                "vader_score", "gpt4_score", "gemini_score", "gemma_score", "grok_score",
+                "sarcasm_score", "is_sarcastic", "sarcasm_reasoning",
+                "perceived_iq", "raw_iq", "iq_confidence", "iq_reasoning",
+                "bot_probability", "is_bot", "bot_reasoning",
+                "score", "confidence", "sarcastic", "reasoning",
+                # Add any other expected keys here
+            }
             for i, text in enumerate(texts):
                 text_results = {
-                    "vader_score": sentiment_results["vader"][i]["score"]
-                    if "vader" in sentiment_results
-                    else 0,
-                    "gpt4_score": sentiment_results["gpt4"][i]["score"]
-                    if "gpt4" in sentiment_results
-                    else 0,
-                    "gemini_score": sentiment_results["gemini"][i]["score"]
-                    if "gemini" in sentiment_results
-                    else 0,
-                    "gemma_score": sentiment_results["gemma"][i]["score"]
-                    if "gemma" in sentiment_results
-                    else 0,
-                    "grok_score": sentiment_results["grok"][i]["score"]
-                    if "grok" in sentiment_results
-                    else 0,
+                    "vader_score": sentiment_results["vader"][i]["score"] if "vader" in sentiment_results else 0,
+                    "gpt4_score": sentiment_results["gpt4"][i]["score"] if "gpt4" in sentiment_results else 0,
+                    "gemini_score": sentiment_results["gemini"][i]["score"] if "gemini" in sentiment_results else 0,
+                    "gemma_score": sentiment_results["gemma"][i]["score"] if "gemma" in sentiment_results else 0,
+                    "grok_score": sentiment_results["grok"][i]["score"] if "grok" in sentiment_results else 0,
                 }
 
                 current_subreddit = (
@@ -1519,7 +1523,6 @@ else:
                             f"Starting sarcasm detection for text {i+1}/{len(texts)}"
                         )
                         try:
-                            # Use the first available model from selected_llms for sarcasm detection
                             sarcasm_model = next(
                                 (
                                     model
@@ -1533,15 +1536,14 @@ else:
                                 sarcasm_model,
                                 [current_subreddit] if current_subreddit else [],
                             )
-                            text_results.update(
-                                {
-                                    "sarcasm_score": sarcasm_results[0]["confidence"],
-                                    "is_sarcastic": sarcasm_results[0]["sarcastic"],
-                                    "sarcasm_reasoning": sarcasm_results[0][
-                                        "reasoning"
-                                    ],
-                                }
-                            )
+                            # Map raw keys to expected output keys
+                            s = sarcasm_results[0]
+                            mapped = {
+                                "sarcasm_score": s.get("confidence"),
+                                "is_sarcastic": s.get("sarcastic"),
+                                "sarcasm_reasoning": s.get("reasoning"),
+                            }
+                            text_results.update(filter_keys(mapped, ALLOWED_KEYS, "sarcasm_results"))
                         except Exception as e:
                             logger.error(f"Error in sarcasm detection: {str(e)}")
                             text_results.update(
@@ -1566,7 +1568,6 @@ else:
                                     }
                                 )
                             else:
-                                # Use the first available model from selected_llms for IQ analysis
                                 iq_model = next(
                                     (
                                         model
@@ -1576,14 +1577,14 @@ else:
                                     "gpt4",
                                 )
                                 iq_results = await analyze_iq_batch([text], iq_model)
-                                text_results.update(
-                                    {
-                                        "perceived_iq": iq_results[0]["iq_score"],
-                                        "raw_iq": iq_results[0]["raw_iq"],
-                                        "iq_confidence": iq_results[0]["confidence"],
-                                        "iq_reasoning": iq_results[0]["reasoning"],
-                                    }
-                                )
+                                iq = iq_results[0]
+                                mapped = {
+                                    "perceived_iq": iq.get("iq_score"),
+                                    "raw_iq": iq.get("raw_iq"),
+                                    "iq_confidence": iq.get("confidence"),
+                                    "iq_reasoning": iq.get("reasoning"),
+                                }
+                                text_results.update(filter_keys(mapped, ALLOWED_KEYS, "iq_results"))
                         except Exception as e:
                             logger.error(f"Error in IQ analysis: {str(e)}")
                             text_results.update(
@@ -1601,7 +1602,6 @@ else:
                             f"Starting bot detection for text {i+1}/{len(texts)}"
                         )
                         try:
-                            # Use the first available model from selected_llms for bot detection
                             bot_model = next(
                                 (
                                     model
@@ -1611,13 +1611,13 @@ else:
                                 "gpt4",
                             )
                             bot_results = await detect_bots_batch([text], bot_model)
-                            text_results.update(
-                                {
-                                    "bot_probability": bot_results[0]["probability"],
-                                    "is_bot": bot_results[0]["is_bot"],
-                                    "bot_reasoning": bot_results[0]["reasoning"],
-                                }
-                            )
+                            b = bot_results[0]
+                            mapped = {
+                                "bot_probability": b.get("probability"),
+                                "is_bot": b.get("is_bot"),
+                                "bot_reasoning": b.get("reasoning"),
+                            }
+                            text_results.update(filter_keys(mapped, ALLOWED_KEYS, "bot_results"))
                         except Exception as e:
                             logger.error(f"Error in bot detection: {str(e)}")
                             text_results.update(
