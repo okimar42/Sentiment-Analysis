@@ -3,7 +3,7 @@ asgiref==3.8.1
 Django==5.0.2
 django-cors-headers==4.3.1
 djangorestframework==3.14.0
-psycopg2-binary==2.9.9
+psycopg[binary]==3.2.3
 
 # Task Queue
 amqp==5.3.1
@@ -28,7 +28,7 @@ numpy==1.26.4
 vaderSentiment==3.3.2
 
 # Image Processing
-Pillow==10.2.0
+Pillow==10.4.0
 
 # Environment and Utils
 gunicorn==21.2.0
